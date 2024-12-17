@@ -16,10 +16,17 @@ body {
 
 
 /*#region Body */
-.pylon_img {
-  width: 600px;
-  height: 500px;
+.body_left {
+  position: relative;
+  width: 50%;
+  height: 30%;
+  overflow: hidden;
   object-fit: cover;
   object-position: center;
+}
+
+.pylon_img {
+  width: 800px;
+  height: 600px;
 }
 /*#endregion Body */
