@@ -1,32 +1,91 @@
+/*#region Imports*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap'); /*Cinzel*/
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap'); /*Montserrat*/
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap'); /*Red Hat*/
+/*#endregion Imports*/
+
+
+/*#region prerequisites*/
 :root {
   --background: #4f0505;
   --foreground: #171717;
+
+  --cc-main-color: #800000;
+  --cc-txt-color1: #000;
+  --cc-txt-color2: #fff;
+
+  --ff-logo_mainElements: 'Cinzel', serif;
+  --ff-buttons: 'Montserrat', serif;
+  --ff-mainTxt: 'Red Hat Display', serif;
+
+  --fs-logo: 30px;
+  --fs-subLogo: 20px;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+}
+/*#endregion prerequisites*/
+
+/*#region Header*/
+.header_left {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;  
+  gap: 1rem;
+  width: fit-content;
 }
 
+.logo_img {
+  width: 100px;
+  height: 100px;
+}
 
+.logo_h1, .logo_h2 {
+  font-family: var(--ff-logo_mainElements);
+}
+
+.logo_h1 {
+  font-weight: 900;
+  font-size: var(--fs-logo);
+  letter-spacing: 10%;
+  color: var(--cc-main-color);
+}
+
+.logo_h2 {
+  font-weight: 700;
+  font-size: var(--fs-subLogo);
+  letter-spacing: 7%;
+  color: var(--cc-txt-color1);
+  opacity: 0.6;
+}
+/*#endregion Header*/
 
 /*#region Body */
 .body_left {
   position: relative;
   width: 50%;
-  height: 30%;
+  height: 70%;
   overflow: hidden;
+}
+
+.pylon_img {
+  width: 590px;
+  height: 680px;
   object-fit: cover;
   object-position: center;
 }
 
-.pylon_img {
-  width: 800px;
-  height: 600px;
+.right_txt {
+  font-family: var(--ff-logo_mainElements);
+  font-weight: 900;
+  letter-spacing: 5%;
+  width: 700px;
+  outline: 2px solid lime;
 }
 /*#endregion Body */
