@@ -1,5 +1,6 @@
 // tailwind.config.js
 const {nextui} = require("@nextui-org/theme");
+const { Montserrat } = require("next/font/google");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -14,6 +15,11 @@ module.exports = {
         colors: {
           background: "var(--background)",
           foreground: "var(--foreground)",
+        },
+        fontFamily: {
+          Cinzel: "var(--ff-cinzel)",
+          Montserrat: "var(--ff-montserrat)",
+          Red_Hat_Display: "var(--ff-redHat)",
         },
       },
     },

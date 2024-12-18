@@ -22,13 +22,14 @@
   --ff-buttons: 'Montserrat', serif;
   --ff-mainTxt: 'Red Hat Display', serif;
 
-  --fs-logo: 30px;
-  --fs-subLogo: 20px;
+  --fs-logo: 25px;
+  --fs-subLogo: 18px;
+  --br-general: 10px;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  padding: 0;
+  margin: 0;
 }
 /*#endregion prerequisites*/
 
@@ -42,8 +43,8 @@ body {
 }
 
 .logo_img {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
 }
 
 .logo_h1, .logo_h2 {
@@ -64,28 +65,39 @@ body {
   color: var(--cc-txt-color1);
   opacity: 0.6;
 }
+
+.login_btn {
+  background-color: var(--cc-main-color);
+  border-radius: var(--br-general);
+  letter-spacing: 15%;
+  color: var(--cc-txt-color2);
+}
 /*#endregion Header*/
 
 /*#region Body */
 .body_left {
   position: relative;
   width: 50%;
-  height: 70%;
   overflow: hidden;
 }
 
 .pylon_img {
   width: 590px;
-  height: 680px;
+  height: 580px;
   object-fit: cover;
   object-position: center;
 }
 
 .right_txt {
-  font-family: var(--ff-logo_mainElements);
-  font-weight: 900;
   letter-spacing: 5%;
-  width: 700px;
-  outline: 2px solid lime;
+  width: 720px;
+  
+}
+
+.drop_btn {
+  width: fit-content;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  background-color: #D9D9D9;
 }
 /*#endregion Body */
