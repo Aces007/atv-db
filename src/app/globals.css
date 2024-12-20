@@ -15,6 +15,8 @@
   --foreground: #171717;
 
   --cc-main-color: #800000;
+  --cc-sub-color: #FFE200;
+  --cc-sub-hover: #ffe100d5;
   --cc-txt-color1: #000;
   --cc-txt-color2: #fff;
 
@@ -52,6 +54,7 @@ body {
 }
 
 .logo_h1 {
+  cursor: pointer;
   font-weight: 900;
   font-size: var(--fs-logo);
   letter-spacing: 10%;
@@ -59,6 +62,7 @@ body {
 }
 
 .logo_h2 {
+  cursor: pointer;
   font-weight: 700;
   font-size: var(--fs-subLogo);
   letter-spacing: 7%;
@@ -66,11 +70,21 @@ body {
   opacity: 0.6;
 }
 
+.about_btns:hover {
+  color: var(--background);
+  text-decoration: underline;
+}
+
 .login_btn {
   background-color: var(--cc-main-color);
   border-radius: var(--br-general);
   letter-spacing: 15%;
   color: var(--cc-txt-color2);
+}
+
+.login_btn:hover{
+  background-color: var(--cc-sub-color);
+  color: var(--cc-txt-color1);
 }
 /*#endregion Header*/
 
@@ -96,8 +110,44 @@ body {
 
 .drop_btn {
   width: fit-content;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
+  border-top-left-radius: var(--br-general);
+  border-bottom-left-radius: var(--br-general);
   background-color: #D9D9D9;
+}
+
+.search_field_bar {
+  width: 450px;
+}
+
+.searchBtn {
+  position: relative;
+  background-color: var(--cc-sub-color);
+  padding: 13px;
+  border-top-right-radius: var(--br-general);
+  border-bottom-right-radius: var(--br-general);
+  cursor: pointer;
+  transition: background-color 0.4s, transform 0.1s ease;
+}
+
+.searchBtn:hover {
+  background-color: var(--cc-sub-hover);
+}
+
+.searchBtn:active {
+  animation: pulse 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 /*#endregion Body */

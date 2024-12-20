@@ -3,6 +3,7 @@ import Image from "next/image";
 
 
 
+
 const Home = () => {
     return( 
         <div className="home_cont min-h-screen w-full bg-white ">
@@ -11,14 +12,18 @@ const Home = () => {
                     <div className="header_left">
                         <img src="./images/logo.png" alt="ATV Logo" className="logo_img"/>
                         <div className="logo_txt flex flex-col relative top-2">
-                            <h1 className="logo_h1 uppercase text-black">Architech Vault</h1>
-                            <h2 className="logo_h2 uppercase text-black">Pup Open University</h2>
+                            <a href="#">
+                                <h1 className="logo_h1 uppercase text-black">Architech Vault</h1>
+                            </a>
+                            <a href="#">
+                                <h2 className="logo_h2 uppercase text-black">Pup Open University</h2>
+                            </a>
                         </div>
                     </div>
 
                     <div className="header_right flex flex-row items-center gap-10">
-                        <a href="#about" className="font-Montserrat font-bold uppercase">About</a>
-                        <a href="#ous" className="font-Montserrat font-bold uppercase">PUP OUS</a>
+                        <a href="#about" className="about_btns font-Montserrat font-bold uppercase">About</a>
+                        <a href="https://www.pup.edu.ph/ous/" target="_blank" className="about_btns font-Montserrat font-bold uppercase">PUP OUS</a>
                         <button href="#login" className="login_btn px-5 py-2 font-Montserrat font-bold">LOGIN</button>
                     </div>
                 </div>
@@ -32,7 +37,7 @@ const Home = () => {
                         <h1 className="right_txt font-Cinzel font-black uppercase text-4xl text-white opacity-80">Open Minds with Open Access</h1>
 
                         <div className="search_bar_cont">
-                            <div className="search_bar_content">
+                            <div className="search_bar_content flex flex-row">
                                 <div className="dropdown">
                                     <Dropdown>
                                         <DropdownTrigger>
@@ -52,10 +57,12 @@ const Home = () => {
                                     </Dropdown>
                                 </div>
                                 <div className="search_field">
-
+                                    <input type="text" placeholder="What are you looking for?..." className="search_field_bar h-14 p-5"/>
                                 </div>
                                 <div className="search_btn">
-                                
+                                    <button className="searchBtn">
+                                        <Image src="/images/materials/SVGs/search.svg" alt="searchBtn" width={30} height={30} />
+                                    </button>
                                 </div>
                             </div>
 
