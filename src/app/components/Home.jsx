@@ -1,10 +1,18 @@
+"use client";
+
 import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
 
 
 
 const Home = () => {
+    const router = useRouter();
+
+    const handleUserLogin = () => {
+        router.push('/UserManagement/Login.jsx')
+    }
+
     return( 
         <div className="home_cont min-h-screen w-full bg-white ">
             <div className="home_content flex flex-col h-full">
@@ -24,7 +32,7 @@ const Home = () => {
                     <div className="header_right flex flex-row items-center gap-10">
                         <a href="#about" className="about_btns font-Montserrat font-bold uppercase">About</a>
                         <a href="https://www.pup.edu.ph/ous/" target="_blank" className="about_btns font-Montserrat font-bold uppercase">PUP OUS</a>
-                        <button href="#login" className="login_btn px-5 py-2 font-Montserrat font-bold">LOGIN</button>
+                        <button onClick={handleUserLogin} className="login_btn px-5 py-2 font-Montserrat font-bold">LOGIN</button>
                     </div>
                 </div>
 
