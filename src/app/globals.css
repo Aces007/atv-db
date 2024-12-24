@@ -19,6 +19,7 @@
   --cc-sub-hover: #ffe100d5;
   --cc-txt-color1: #000;
   --cc-txt-color2: #fff;
+  --cc-OU-svg: #603d30;
 
   --ff-logo_mainElements: 'Cinzel', serif;
   --ff-buttons: 'Montserrat', serif;
@@ -157,9 +158,9 @@ body {
 
 /*#region LoginPage*/
     .svgConfOpenU {
-      background-color: var(--cc-sub-color);
-      border-radius: 50px;
-      padding: 5px;
+      background-color: var(--cc-OU-svg);
+      border-radius: 60px;
+      padding: 10px;
     }
 
 
