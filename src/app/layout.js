@@ -1,5 +1,6 @@
 import { Cinzel, Montserrat, Red_Hat_Display } from "next/font/google";
 import "./globals.css";
+import './fontawesome.js';
 
 const cinzel = Cinzel({
   variable: "--ff-cinzel",
