@@ -34,20 +34,28 @@ const Login = () => {
                 </div>
 
                 <div className="login_panel flex flex-col items-center w-full h-screen py-6">
-                    <div className="flex flex-col items-center gap-2">
-                        <Image src="/images/logo.png" alt="openULogo" width={140} height={140} />
-                        <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
-                    </div>
-
-                    <div >
-                        <div className="username_input">
-                            
+                    <div className="login_content">
+                        <div className="flex flex-col items-center gap-2">
+                            <Image src="/images/logo.png" alt="openULogo" width={140} height={140} />
+                            <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
                         </div>
 
-                        <div className="password_input">
+                        <form className="user_forms">
+                            <div className="username_input">
+                              <input type="text" placeholder="Username" className="form_fields h-10 w-full p-6 rounded" />
+                            </div>
+                            <div className="password_input">
+                                <input type="password" placeholder="Password" className="form_fields h-10 w-full p-6 rounded" />
+                            </div>
 
-                        </div>
+                            <div className="form_btns flex flex-row items-center justify-between">
+                                <button className="login_btn2">Log In</button>
+                                <button className="signup_btn">Sign Up</button>
+                            </div>
+                            <button className="forgot_pass font-Montserrat text-white text-opacity-90">Forgot Password?</button>
+                        </form>
                     </div>
+
                     <img src="./images/materials/obelisk.jpg" alt="PUP Pylon Image" className="obelisk_img"/>
                 </div>
             </div>
