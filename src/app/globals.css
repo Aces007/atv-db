@@ -20,6 +20,8 @@
   --cc-txt-color1: #000;
   --cc-txt-color2: #fff;
   --cc-OU-svg: #603d30;
+  --cc-signup-btn: #dccece;
+  --cc-signup-hover: #dcceced5;
 
   --ff-logo_mainElements: 'Cinzel', serif;
   --ff-buttons: 'Montserrat', serif;
@@ -28,6 +30,7 @@
   --fs-logo: 25px;
   --fs-subLogo: 18px;
   --br-general: 10px;
+  --br-signup-login: 5px;
 }
 
 body {
@@ -168,8 +171,14 @@ body {
       background-color: var(--background); 
     }
 
+    .login_content {
+      position: relative;
+      z-index: 1; 
+    }
+
     .obelisk_img {
       position: fixed;
+      z-index: 0;
       top: 0px;
       opacity: 10%;
       filter: blur(0.2rem);
@@ -177,5 +186,57 @@ body {
       height: 650px;
       object-fit: cover;
       object-position: center;
+    }
+    
+    .user_forms {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+      margin-top: 60px;
+    }
+
+    .form_fields {
+      box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .login_btn2 {
+      background-color: var(--cc-sub-color);
+      border-radius: var(--br-signup-login);
+      text-transform: uppercase;
+      letter-spacing: 15%;
+      color: var(--cc-txt-color1);
+      font-family: var(--ff-buttons);
+      font-weight: bold;
+      width: 185px;
+      padding-inline: 10px;
+      padding-block: 10px;
+    }
+
+    .login_btn2:hover{
+      background-color: var(--cc-sub-hover);
+      color: var(--cc-txt-color1);
+    }
+
+    .signup_btn {
+      background-color: var(--cc-signup-btn);
+      border-radius: var(--br-signup-login);
+      text-transform: uppercase;
+      letter-spacing: 15%;
+      color: var(--cc-txt-color1);
+      font-family: var(--ff-buttons);
+      font-weight: bold;
+      width: 185px;
+      padding-inline: 10px;
+      padding-block: 10px;
+    }
+
+    .signup_btn:hover{
+      background-color: var(--cc-signup-hover);
+      color: var(--cc-txt-color1);
+    }
+
+    .forgot_pass:hover {
+      color: var(--cc-signup-btn);
     }
 /*#endregion LoginPage*/
