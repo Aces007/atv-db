@@ -15,6 +15,7 @@
   --foreground: #171717;
 
   --cc-main-color: #800000;
+  --cc-main-color-hover: #800000d0;
   --cc-sub-color: #FFE200;
   --cc-sub-hover: #ffe100d5;
   --cc-txt-color1: #000;
@@ -188,12 +189,19 @@ body {
       object-position: center;
     }
     
-    .user_forms {
+    .user_forms_login {
       width: 400px;
       display: flex;
       flex-direction: column;
-      gap: 50px;
+      gap: 60px;
       margin-top: 60px;
+    }
+    .user_forms_signup {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      margin-top: 40px;
     }
 
     .form_fields {
@@ -211,6 +219,7 @@ body {
       width: 185px;
       padding-inline: 10px;
       padding-block: 10px;
+      box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
 
     .login_btn2:hover{
@@ -229,14 +238,50 @@ body {
       width: 185px;
       padding-inline: 10px;
       padding-block: 10px;
+      box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
-
+    
     .signup_btn:hover{
       background-color: var(--cc-signup-hover);
+      color: var(--cc-txt-color2);
+    }
+    
+    .forgot_pass:hover {
+      color: var(--cc-signup-btn);
+    }
+
+    .sis_btn {
+      background-color: var(--cc-main-color);
+      border-radius: var(--br-signup-login);
+      text-transform: uppercase;
+      letter-spacing: 15%;
+      color: var(--cc-txt-color2);
+      font-family: var(--ff-buttons);
+      font-weight: bold;
+      width: 185px;
+      padding-inline: 10px;
+      padding-block: 10px;
+      box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .sis_btn:hover {
+      background-color: var(--cc-main-color-hover);
       color: var(--cc-txt-color1);
     }
 
-    .forgot_pass:hover {
-      color: var(--cc-signup-btn);
+    .date_dropdown {
+      font-family: var(--ff-buttons);
+      font-weight: 600;
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--br-signup-login);
+      box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
+
+    .date_dropdown:focus {
+      outline: none;
+      border-color: #0060df;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
 /*#endregion LoginPage*/
