@@ -13,7 +13,7 @@ const Home = () => {
             <div className="home_content flex flex-col h-full">
                 <div className="header px-12 py-6 flex flex-row items-center justify-between">
                     <div className="header_left">
-                        <img src="./images/logo.png" alt="ATV Logo" className="logo_img"/>
+                        <Link href={'./homepage/'}><img src="./images/logo.png" alt="ATV Logo" className="logo_img"/></Link>
                         <div className="logo_txt flex flex-col relative top-2">
                             <a href="#">
                                 <h1 className="logo_h1 uppercase text-black">Architech Vault</h1>
