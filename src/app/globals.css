@@ -11,6 +11,7 @@
 
 /*#region prerequisites*/
 :root {
+  /*Color Design System*/
   --background: #4f0505;
   --foreground: #171717;
 
@@ -24,14 +25,26 @@
   --cc-signup-btn: #dccece;
   --cc-signup-hover: #dcceced5;
 
+  /*Main Fonts Design System*/
   --ff-logo_mainElements: 'Cinzel', serif;
   --ff-buttons: 'Montserrat', serif;
   --ff-mainTxt: 'Red Hat Display', serif;
 
+  /*Font Size Design System*/
   --fs-logo: 25px;
   --fs-subLogo: 18px;
+
+  /*Border Radius Design System*/
   --br-general: 10px;
   --br-signup-login: 5px;
+
+  /*Padding Design System*/
+  --pad-min: 4px;
+  --pad-sm: 8px;
+  --pad-med: 13px;
+  --pad-lg: 24px;
+  --pad-xlg : 40px;
+  --pad-max: 64px;
 }
 
 body {
@@ -128,7 +141,7 @@ body {
     .searchBtn {
       position: relative;
       background-color: var(--cc-sub-color);
-      padding: 13px;
+      padding: var(--pad-med);
       border-top-right-radius: var(--br-general);
       border-bottom-right-radius: var(--br-general);
       cursor: pointer;
@@ -164,7 +177,7 @@ body {
     .svgConfOpenU {
       background-color: var(--cc-OU-svg);
       border-radius: 60px;
-      padding: 10px;
+      padding: var(--pad-sm);
     }
 
 
@@ -217,8 +230,8 @@ body {
       font-family: var(--ff-buttons);
       font-weight: bold;
       width: 185px;
-      padding-inline: 10px;
-      padding-block: 10px;
+      padding-inline: var(--pad-med);
+      padding-block: var(--pad-med);
       box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
 
@@ -236,8 +249,8 @@ body {
       font-family: var(--ff-buttons);
       font-weight: bold;
       width: 185px;
-      padding-inline: 10px;
-      padding-block: 10px;
+      padding-inline: var(--pad-med);
+      padding-block: var(--pad-med);
       box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
     
@@ -259,8 +272,8 @@ body {
       font-family: var(--ff-buttons);
       font-weight: bold;
       width: 185px;
-      padding-inline: 10px;
-      padding-block: 10px;
+      padding-inline: var(--pad-med);
+      padding-block: var(--pad-med);
       box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
 
@@ -273,7 +286,7 @@ body {
       font-family: var(--ff-buttons);
       font-weight: 600;
       width: 100%;
-      padding: 10px;
+      padding: var(--pad-med);
       border-radius: var(--br-signup-login);
       box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
       cursor: pointer;
