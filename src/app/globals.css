@@ -298,3 +298,24 @@ body {
       box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     }
 /*#endregion LoginPage*/
+
+
+/*#region SearchResults*/
+.banner_content {
+  background-color: var(--background);
+  padding-block: var(--pad-max);
+}
+
+.mural_img {
+  position: absolute;
+  z-index: 0;
+  top: -220px;
+  right: 0px;
+  opacity: 10%;
+  filter: blur(0.3rem);
+  width: 2090px;
+  height: 780px;
+  object-fit: cover;
+  object-position: center;
+}
+/*#endregion SearchResults*/

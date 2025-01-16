@@ -1,4 +1,4 @@
-import Home from "./homepage/home";
+import Home from "./homepage/page"
 import './fontawesome.js';
 
 export default function HomePage() {
