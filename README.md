@@ -6,3 +6,16 @@
 
 
 ### Installation Tutorial
+**1.Clone the repository into your local device using**
+```
+    git clone https://github.com/Aces007/atv-db.git
+```
+**2.Inside the project folder open your git bash or vs code terminal and type**
+```
+    npm install
+```
+> This is to install all the dependencies in the project found inside the package.json file.
+**3.When making commits in the repository use**
+```
+    git checkout -b date-name
+```
