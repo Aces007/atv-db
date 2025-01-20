@@ -5,11 +5,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe, faMobileScreen, faWifi, faCheck, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { supabase } from '@/lib/supabaseClient';
+import { useWebsiteContext } from '../WebsiteContext';
+
 
 
 const SignUp = () => {
+    const { handleSignup, loading } = useWebsiteContext();
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [date, setDate] = useState({ month: "", day: "", year: "" })
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        birthdate: { month: "", day: "", year: "",},
+    });
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
     const months = [
         "January", "February", "March", "April", "May", "June", 
         "July", "August", "September", "October", "November", "December"
@@ -21,11 +32,37 @@ const SignUp = () => {
         setPasswordVisible(!passwordVisible);
     }
 
-    const handleDateChange = (e) => {
+    const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setDate({ ...date, [name]: value });
-    }
+        if (name === "month" || name === "day" || name === "year") {
+            setFormData((prev) => ({
+                ...prev, 
+                birthdate: { ...prev.birthdate, [name]: value },
+            }));
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
+    };
 
+    const onSubmit = async(e) => {
+        e.preventDefault();
+        setError(null);
+
+        const { email, password, confirmPassword, birthdate } = formData;
+        const { month, day, year } = birthdate;
+
+        if (!email || !password || !confirmPassword || !month || !day || !year) {
+            setError("All Fields are required.")
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.")
+            return;
+        }
+
+        await handleSignUp(email, password, month, day, year);
+    };
 
 
     return (
@@ -66,12 +103,12 @@ const SignUp = () => {
                             <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
                         </div>
 
-                        <form className="user_forms_signup">
+                        <form className="user_forms_signup" onSubmit={onSubmit}>
                             <div className="email_input">
-                              <input type="text" placeholder="PUP Email" className="form_fields h-4 w-full p-5 rounded" />
+                              <input type="text" placeholder="PUP Email" className="form_fields h-4 w-full p-5 rounded" value={formData.email} onChange={handleInputChange} />
                             </div>
                             <div className="password_input relative">
-                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" className="form_fields h-4 w-full p-5 rounded" />
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" className="form_fields h-4 w-full p-5 rounded" value={formData.password} onChange={handleInputChange} />
 
                                 <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
                                     <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
@@ -79,7 +116,7 @@ const SignUp = () => {
                             </div>
                             
                             <div className="password_input relative">
-                                <input type={passwordVisible ? "text" : "password"} placeholder="Confirm Password" className="form_fields h-4 w-full p-5 rounded" />
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Confirm Password" className="form_fields h-4 w-full p-5 rounded" value={formData.confirmPassword} onChange={handleInputChange} />
 
                                 <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
                                     <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
@@ -87,21 +124,21 @@ const SignUp = () => {
                             </div>
 
                             <div className='flex flex-row justify-around gap-10'>
-                                <select name="month" value={date.month} onChange={handleDateChange} className="date_dropdown">
+                                <select name="month" value={formData.birthdate.month} onChange={handleInputChange} className="date_dropdown">
                                     <option value="">Month</option>
                                     {months.map((month, index) => (
                                         <option key={index} value={month}>{month}</option>
                                     ))}
                                 </select>
 
-                                <select name="day" value={date.day} onChange={handleDateChange} className="date_dropdown">
+                                <select name="day" value={formData.birthdate.day} onChange={handleInputChange} className="date_dropdown">
                                     <option value="">Day</option>
                                     {days.map((day, index) => (
                                         <option key={index} value={day}>{day}</option>
                                     ))}
                                 </select>
 
-                                <select name="year" value={date.year} onChange={handleDateChange} className="date_dropdown">
+                                <select name="year" value={formData.birthdate.year} onChange={handleInputChange} className="date_dropdown">
                                 <option value="">Year</option>
                                     {years.map((year, index) => (
                                         <option key={index} value={year}>{year}</option>
@@ -111,7 +148,7 @@ const SignUp = () => {
 
                             
                             <div className='flex flex-row items-center justify-between gap-2'>
-                                <button className="signup_btn">Sign Up</button>
+                                <button className="signup_btn" type='submit' disabled={loading} >Sign Up</button>
                                 <Link href={"https://sis1.pup.edu.ph/"}><button className="sis_btn">PUP-SIS</button></Link>
                             </div>
                         </form>
