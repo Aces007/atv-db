@@ -34,13 +34,17 @@ const SignUp = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
         if (name === "month" || name === "day" || name === "year") {
             setFormData((prev) => ({
                 ...prev, 
                 birthdate: { ...prev.birthdate, [name]: value },
             }));
         } else {
-            setFormData({ ...formData, [name]: value });
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }))
         }
     };
 
@@ -61,7 +65,7 @@ const SignUp = () => {
             return;
         }
 
-        await handleSignUp(email, password, month, day, year);
+        await handleSignup(email, password, month, day, year);
     };
 
 
@@ -105,10 +109,10 @@ const SignUp = () => {
 
                         <form className="user_forms_signup" onSubmit={onSubmit}>
                             <div className="email_input">
-                              <input type="text" placeholder="PUP Email" className="form_fields h-4 w-full p-5 rounded" value={formData.email} onChange={handleInputChange} />
+                              <input type="text" placeholder="PUP Email" name='email' className="form_fields h-4 w-full p-5 rounded" value={formData.email} onChange={handleInputChange} />
                             </div>
                             <div className="password_input relative">
-                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" className="form_fields h-4 w-full p-5 rounded" value={formData.password} onChange={handleInputChange} />
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" name='password' className="form_fields h-4 w-full p-5 rounded" value={formData.password} onChange={handleInputChange} />
 
                                 <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
                                     <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
@@ -116,7 +120,7 @@ const SignUp = () => {
                             </div>
                             
                             <div className="password_input relative">
-                                <input type={passwordVisible ? "text" : "password"} placeholder="Confirm Password" className="form_fields h-4 w-full p-5 rounded" value={formData.confirmPassword} onChange={handleInputChange} />
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Confirm Password" name='confirmPassword' className="form_fields h-4 w-full p-5 rounded" value={formData.confirmPassword} onChange={handleInputChange} />
 
                                 <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
                                     <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
