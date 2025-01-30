@@ -12,6 +12,9 @@ module.exports = {
     ],
     theme: {
       extend: {
+        borderWidth: {
+          medium: "2px", // Add your desired value here
+        },
         colors: {
           background: "var(--background)",
           foreground: "var(--foreground)",
@@ -33,7 +36,7 @@ module.exports = {
           min: "8px",
           sm: "16px",
           med: "24px",
-          lg : "32px",
+          lg: "32px",
           max: "40px",
         },
         padding: {
@@ -41,7 +44,7 @@ module.exports = {
           sm: "8px",
           med: "12px",
           lg: "24px",
-          xlg : "40px",
+          xlg: "40px",
           max: "64px",
         },
         fontSize: {
