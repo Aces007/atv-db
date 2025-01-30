@@ -1,7 +1,6 @@
 import { Cinzel, Montserrat, Red_Hat_Display } from "next/font/google";
 import "./globals.css";
 import './fontawesome.js';
-import { WebProvider } from "./WebsiteContext";
 
 const cinzel = Cinzel({
   variable: "--ff-cinzel",
@@ -26,17 +25,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <WebProvider>
-      <html lang="en">
-        <head>
-          <link rel="icon" href="/favicon.ico" />
-        </head>
-        <body
-          className={`${cinzel.variable} ${montserrat.variable} ${redHat.variable} antialiased`}
-        >
-          {children}
-        </body>
-      </html>
-    </WebProvider>
+    
+    <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+      </head>
+      <body
+        className={`${cinzel.variable} ${montserrat.variable} ${redHat.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  
   );
 }
