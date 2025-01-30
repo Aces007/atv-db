@@ -3,6 +3,7 @@
 import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
 import Image from "next/image";
 import Link from "next/link";
+import Header from "../header/page";
 
 
 
@@ -11,25 +12,7 @@ const Home = () => {
     return( 
         <div className="home_cont min-h-screen w-full bg-white ">
             <div className="home_content flex flex-col h-full">
-                <div className="header px-max py-lg flex flex-row items-center justify-between">
-                    <div className="header_left">
-                        <Link href={'./homepage/'}><img src="./images/logo.png" alt="ATV Logo" className="logo_img"/></Link>
-                        <div className="logo_txt flex flex-col relative top-2">
-                            <a href="#">
-                                <h1 className="logo_h1 uppercase text-black">Architech Vault</h1>
-                            </a>
-                            <a href="#">
-                                <h2 className="logo_h2 uppercase text-black">Pup Open University</h2>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div className="header_right flex flex-row items-center gap-max">
-                        <a href="#about" className="about_btns font-Montserrat font-bold uppercase">About</a>
-                        <a href="https://www.pup.edu.ph/ous/" target="_blank" className="about_btns font-Montserrat font-bold uppercase">PUP OUS</a>
-                        <Link href={'./loginpage/'}><button className="login_btn px-lg py-sm font-Montserrat font-bold">LOGIN</button></Link>
-                    </div>
-                </div>
+                <Header />
 
                 <div className="body mt-10 mb-40 flex items-center justify-between bg-background">
                     <div className="body_left">

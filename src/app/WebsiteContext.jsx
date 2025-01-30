@@ -11,23 +11,32 @@ export const WebProvider = ({ children }) => {
 
     
 
-    const handleSignup = async(email, password, month, day, year) => {
+    const handleSignup = async (email, password, month, day, year) => {
         setLoading(true);
-
+    
         try {
-            const { error, user } = await supabase.auth.signUp({
-                email, password,
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
             });
+    
+            // Access `user` from the `data` object
+            const user = data?.user;
+    
             if (error) throw error;
-
+            if (!user) throw new Error('User not created');
+    
+            // Format the birthdate
             const birthdate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    
+            // Insert additional user information into your `Users` table
             const { error: insertError } = await supabase
                 .from('Users')
                 .insert([{ id: user.id, email, birthdate }]);
-            
+    
             if (insertError) throw insertError;
-
-            alert('Signup Process Successful!')
+    
+            alert('Signup Process Successful!');
         } catch (error) {
             console.error('Error during signup:', error.message);
             alert(error.message);
@@ -36,6 +45,7 @@ export const WebProvider = ({ children }) => {
         }
     };
 
+    
     const handleLogin = async(email, password) => {
         setLoading(true);
 
