@@ -13,7 +13,12 @@ module.exports = {
     theme: {
       extend: {
         borderWidth: {
-          medium: "2px", // Add your desired value here
+          min: "4px",
+          sm: "8px",
+          med: "12px",
+          lg: "16px",
+          xlg: "20px",
+          max: "24px",
         },
         colors: {
           background: "var(--background)",

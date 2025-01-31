@@ -5,16 +5,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe, faMobileScreen, faWifi, faCheck, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-
+import { useWebsiteContext } from '../WebsiteContext';
 
 
 const Login = () => {
+    const { handleLogin, loading } = useWebsiteContext();
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
     }
 
+    const handleSubmit = async (e) => {
+            e.preventDefault();
+            await handleLogin(email, password)
+    }
 
     return (
         <div className="login_cont">
@@ -54,12 +62,12 @@ const Login = () => {
                             <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
                         </div>
 
-                        <form className="user_forms_login">
+                        <form className="user_forms_login" onSubmit={handleSubmit}>
                             <div className="username_input">
-                              <input type="text" placeholder="Username" className="form_fields h-10 w-full p-6 rounded" />
+                              <input type="text" placeholder="Username" value={email} onChange={(e) => setEmail(e.target.value)} className="form_fields h-10 w-full p-6 rounded" required/>
                             </div>
                             <div className="password_input relative">
-                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" className="form_fields h-10 w-full p-6 rounded" />
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="form_fields h-10 w-full p-6 rounded" required/>
 
                                 <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
                                     <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
@@ -67,7 +75,7 @@ const Login = () => {
                             </div>
 
                             <div className="form_btns flex flex-row items-center justify-between">
-                                <button className="login_btn2">Log In</button>
+                                <button  type='submit' className="login_btn2">{loading ? "Logging In..." : "Log In"}</button>
                                 <Link href={'./signuppage/'}><button className="signup_btn">Sign Up</button></Link>
                             </div>
                             <button className="forgot_pass font-Montserrat text-white text-opacity-90">Forgot Password?</button>

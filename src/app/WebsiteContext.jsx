@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 const WebsiteContext = createContext();
@@ -8,8 +9,7 @@ const WebsiteContext = createContext();
 export const WebProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
-
-    
+    const router = useRouter();
 
     const handleSignup = async (email, password, month, day, year) => {
         setLoading(true);
@@ -35,8 +35,11 @@ export const WebProvider = ({ children }) => {
                 .insert([{ id: user.id, email, birthdate }]);
     
             if (insertError) throw insertError;
-    
+
+            setUser(user);    
             alert('Signup Process Successful!');
+
+            router.push('./homepage/')
         } catch (error) {
             console.error('Error during signup:', error.message);
             alert(error.message);
@@ -56,7 +59,11 @@ export const WebProvider = ({ children }) => {
             if (error) throw error;
 
             setUser(data.user);
+            console.log(data.user);
             alert('Login Process Successful');
+            
+            
+            router.push('./homepage/')
         } catch (error) {
             console.error('Error during login:', error.message);
             alert(error.message);
@@ -75,6 +82,8 @@ export const WebProvider = ({ children }) => {
 
             setUser(null);
             alert('Account Logged Out Successfully')
+
+            router.push('./loginpage/')
         } catch (error) {
             console.error('Error during logout:', error.message);
             alert(error.message);
