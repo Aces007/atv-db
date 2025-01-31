@@ -24,6 +24,9 @@
   --cc-OU-svg: #603d30;
   --cc-signup-btn: #dccece;
   --cc-signup-hover: #dcceced5;
+  --cc-profile-btn: #cccccc;
+  --cc-profile-hover: #989898;
+
 
   /*Main Fonts Design System*/
   --ff-logo_mainElements: 'Cinzel', serif;
@@ -104,6 +107,33 @@ body {
     .login_btn:hover{
       background-color: var(--cc-sub-color);
       color: var(--cc-txt-color1);
+    }
+
+    .profile_img {
+      width: 60px;
+      height: 60px;
+      border-color: var(--cc-profile-btn);
+    }
+
+    .profile_drop_cont {
+      background-color: var(--cc-profile-btn);
+      display: flex;
+      align-items: center;
+      text-align: center;
+      width: max-content;
+      border-radius: var(--br-general);
+    }
+
+    .profile_drop_btns {
+      width: 100%;
+      padding-inline: 20px;
+      padding-block: 10px;
+      border-radius: var(--br-signup-login);
+    }
+
+    .profile_drop_btns:hover {
+      background-color: var(--cc-profile-hover);
+      font-weight: bold;
     }
     /*#endregion Header*/
 
@@ -348,3 +378,5 @@ body {
   text-align: justify;
 }
 /*#endregion About*/
+
+
