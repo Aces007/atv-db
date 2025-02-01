@@ -26,6 +26,7 @@
   --cc-signup-hover: #dcceced5;
   --cc-profile-btn: #cccccc;
   --cc-profile-hover: #989898;
+  --cc-user-info-bg: #f7f7f7;
 
 
   /*Main Fonts Design System*/
@@ -380,3 +381,28 @@ body {
 /*#endregion About*/
 
 
+/*#region Profile*/
+.profile_menu:hover {
+  background-color: var(--background);
+  color: var(--cc-txt-color2);
+  font-weight: 900;
+  padding: 10px;
+  border-radius: var(--br-general);
+}
+
+.user_basic {
+  background-color: var(--cc-user-info-bg);
+  padding: var(--pad-med);
+  border-radius: var(--br-general);
+}
+
+.placeHolderImg {
+  border-radius: 60px;
+}
+
+.right_panel {
+  background-color: var(--background);
+  padding: 400px;
+  border-radius: var(--br-general);
+}
+/*#endregion Profile*/

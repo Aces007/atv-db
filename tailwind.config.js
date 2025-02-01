@@ -65,6 +65,11 @@ module.exports = {
           med: "30px",
           max: "60px",
         },
+        letterSpacing: {
+          min: "1.2px",
+          sm: "2.4px",
+          med: "4.8px",
+        }
       },
     },
     plugins: [],

@@ -34,11 +34,21 @@ const Home = () => {
                                         </DropdownTrigger>
                                         
                                         <DropdownMenu className="drop_menu" aria-label="Filter Options">
-                                            {/* <DropdownItem key="keywords">Keywords</DropdownItem>
-                                            <DropdownItem key="author">Author</DropdownItem>
-                                            <DropdownItem key="subject">Subject</DropdownItem>
-                                            <DropdownItem key="access">Access Type</DropdownItem>
-                                            <DropdownItem key="language">Language</DropdownItem> */}
+                                            <DropdownItem key="keywords">
+                                                Keywords
+                                            </DropdownItem>
+                                            <DropdownItem key="author">
+                                                Author
+                                            </DropdownItem>
+                                            <DropdownItem key="subject">
+                                                Subject
+                                            </DropdownItem>
+                                            <DropdownItem key="access">
+                                                Access Type
+                                            </DropdownItem>
+                                            <DropdownItem key="language">
+                                                Language
+                                            </DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
                                 </div>
