@@ -10,7 +10,13 @@
 ```
     git clone https://github.com/Aces007/atv-db.git
 ```
-**2.Inside the project folder open your git bash or vs code terminal and type**
+**2.Create environment**
+Inside the root file directory create a file name ".env.local", inside the file copy this code
+```
+    NEXT_PUBLIC_SUPABASE_URL=https://ehwzmnpmtukqybibgwuk.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVod3ptbnBtdHVrcXliaWJnd3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ0MzYxMjksImV4cCI6MjA1MDAxMjEyOX0.6zq77zrf8aa2AYR-VTs8fgSALVTEIbOjM4pcNXQR9Xw
+```
+**3.Inside the project folder open your git bash or vs code terminal and type**
 ```
     npm install
 ```
