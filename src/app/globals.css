@@ -27,6 +27,9 @@
   --cc-profile-btn: #cccccc;
   --cc-profile-hover: #989898;
 
+  --cc-box-shadow: #a9a9a9;
+  --cc-user-basic-bg: #f7f7f7;
+
 
   /*Main Fonts Design System*/
   --ff-logo_mainElements: 'Cinzel', serif;
@@ -380,3 +383,39 @@ body {
 /*#endregion About*/
 
 
+/*#region Profile Page*/
+.user_basic {
+  padding: var(--pad-med);
+  border-radius: var(--br-general);
+  background-color: var(--cc-user-basic-bg);
+  box-shadow: 0px 5px 10px 2px var(--cc-box-shadow);
+}
+
+.profile_menu:hover {  
+  background-color: var(--background);
+  color: var(--cc-txt-color2);
+  padding: var(--pad-med);
+  border-radius: var(--br-general);
+  font-weight: 700;
+}
+
+.right_panel {
+  background-color: var(--background);
+  width: 75%;
+  border-radius: var(--br-general);
+}
+
+.street_art {
+  border-radius: var(--br-general);
+  position: absolute;
+  z-index: 0;
+  top: 145px;
+  right: 65px;
+  opacity: 10%;
+  filter: blur(0.3rem);
+  width: 930px;
+  height: 310px;
+  object-fit: cover;
+  object-position: center;
+}
+/*#endregion Profile Page*/
