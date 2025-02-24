@@ -14,6 +14,7 @@ const SignUp = () => {
     const { handleSignup, loading } = useWebsiteContext();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [formData, setFormData] = useState({
+        name: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -34,7 +35,7 @@ const SignUp = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
+    
         if (name === "month" || name === "day" || name === "year") {
             setFormData((prev) => ({
                 ...prev, 
@@ -44,31 +45,45 @@ const SignUp = () => {
             setFormData((prev) => ({
                 ...prev,
                 [name]: value,
-            }))
+            }));
         }
-    };
+    };    
 
-    const onSubmit = async(e) => {
+    const calculateAge = (year, month, day) => {
+        const birthDate = new Date(year, month - 1, day);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--; 
+        }
+        return age;
+    };
+    
+
+    const onSubmit = async (e) => {
         e.preventDefault();
         setError(null);
-
-        const { email, password, confirmPassword, birthdate } = formData;
+    
+        const { name, email, password, confirmPassword, birthdate } = formData;
         const { month, day, year } = birthdate;
-
-        if (!email || !password || !confirmPassword || !month || !day || !year) {
-            setError("All Fields are required.")
+    
+        if (!name || !email || !password || !confirmPassword || !month || !day || !year) {
+            setError("All fields are required.");
             return;
         }
-
+    
         if (password !== confirmPassword) {
-            setError("Passwords do not match.")
+            setError("Passwords do not match.");
             return;
         }
-
-        await handleSignup(email, password, month, day, year);
+    
+        const age = calculateAge(year, month, day);
+        await handleSignup(name, email, password, month, day, year, age);
     };
 
-
+    
     return (
         <div className="login_cont">
             <div className="login_columns flex flex-row items-center justify-between">
@@ -100,7 +115,7 @@ const SignUp = () => {
                     </div>
                 </div>
 
-                <div className="login_panel flex flex-col items-center w-full h-screen py-6">
+                <div className="login_panel flex flex-col items-center w-full h-screen py-2">
                     <div className="login_content">
                         <div className="flex flex-col items-center gap-2">
                             <Image src="/images/logo.png" alt="openULogo" width={140} height={140} />
@@ -108,6 +123,9 @@ const SignUp = () => {
                         </div>
 
                         <form className="user_forms_signup" onSubmit={onSubmit}>
+                            <div className="name_input">
+                              <input type="text" placeholder="User Name" name='name' className="form_fields h-4 w-full p-5 rounded" value={formData.name} onChange={handleInputChange} />
+                            </div>
                             <div className="email_input">
                               <input type="text" placeholder="PUP Email" name='email' className="form_fields h-4 w-full p-5 rounded" value={formData.email} onChange={handleInputChange} />
                             </div>
