@@ -12,7 +12,7 @@ export const WebProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleSignup = async (email, password, month, day, year) => {
+    const handleSignup = async (name, email, password, month, day, year, age) => {
         setLoading(true);
     
         try {
@@ -26,20 +26,19 @@ export const WebProvider = ({ children }) => {
             if (error) throw error;
             if (!user) throw new Error('User not created');
     
-            // Format the birthdate
+            // Format birthdate
             const birthdate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     
-            // Insert additional user information into your `Users` table
+            // Insert user details into the `Users` table
             const { error: insertError } = await supabase
                 .from('Users')
-                .insert([{ id: user.id, email, birthdate }]);
+                .insert([{ id: user.id, name, email, birthdate, age }]);
     
             if (insertError) throw insertError;
-
-            setUser(user);    
-            alert('Signup Process Successful!');
-
-            router.push('./homepage/')
+    
+            setUser(user);
+            alert('Signup Successful!');
+            router.push('./homepage/');
         } catch (error) {
             console.error('Error during signup:', error.message);
             alert(error.message);
@@ -47,6 +46,7 @@ export const WebProvider = ({ children }) => {
             setLoading(false);
         }
     };
+    
 
     
     const handleLogin = async(email, password) => {
