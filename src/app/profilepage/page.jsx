@@ -5,10 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "../header/page";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faLock, faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+
+import PersonalInfo from "../personalinfopanel/page";
+import Security from "../securitypanel/page";
+import MyLibrary from "../mylibrarypanel/page";
+import { useState } from "react";
 
 
 const Profile = () => {
+    const [selectedSection, setSelectedSection] = useState('PersonalInfo');
+
     return (
         <div className="profile_cont">
             <div className="profile_content">
@@ -28,25 +35,30 @@ const Profile = () => {
                         </div>
 
                         <div className="profile_btns flex flex-col items-start justify-around gap-5">
-                            <button className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"><FontAwesomeIcon icon={faUser} size="1x" className="profileSVGs" />Personal Info</button>
-                            <button className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"><FontAwesomeIcon icon={faLock} size="1x" className="profileSVGs" />Security</button>
-                            <Link href={"https://sis8.pup.edu.ph/"} target="_blank"><button className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"><FontAwesomeIcon icon={faGlobe} size="1x" className="profileSVGs" />PUP SIS</button></Link>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("PersonalInfo")}
+                            >
+                                    <FontAwesomeIcon icon={faUser} size="1x" className="profileSVGs" />Personal Info</button>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("Security")}
+                            >
+                                    <FontAwesomeIcon icon={faLock} size="1x" className="profileSVGs" />Security</button>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("MyLibrary")}
+                            >
+                                    <FontAwesomeIcon icon={faBook} size="1x" className="profileSVGs" />My Library</button>
                         </div>
                     </div>
                     
                     <div className="right_panel">
-                        <img src="/images/materials/streetart.jpg" alt="PUP Street Art" className="street_art" />
-
-                        <div className="info_content">
-                            <div className="info_preview">
-
-                            </div>
-
-                            <div className="edit_profile">
-
-                            </div>
-                        </div>
+                        {selectedSection === "PersonalInfo" && <PersonalInfo />}
+                        {selectedSection === "Security" && <Security />}
+                        {selectedSection === "MyLibrary" && <MyLibrary />}
                     </div>
+                    
                 </div>
             </div>
         </div>
