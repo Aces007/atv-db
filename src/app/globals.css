@@ -45,12 +45,12 @@
   --br-signup-login: 5px;
 
   /*Padding Design System*/
-  --pad-min: 4px;
-  --pad-sm: 8px;
-  --pad-med: 13px;
-  --pad-lg: 24px;
-  --pad-xlg : 40px;
-  --pad-max: 64px;
+  --pad-mar-min: 4px;
+  --pad-mar-sm: 8px;
+  --pad-mar-med: 13px;
+  --pad-mar-lg: 24px;
+  --pad-mar-xlg : 40px;
+  --pad-mar-max: 64px;
 }
 
 body {
@@ -173,7 +173,7 @@ body {
     .searchBtn {
       position: relative;
       background-color: var(--cc-sub-color);
-      padding: var(--pad-med);
+      padding: var(--pad-mar-med);
       border-top-right-radius: var(--br-general);
       border-bottom-right-radius: var(--br-general);
       cursor: pointer;
@@ -209,7 +209,7 @@ body {
     .svgConfOpenU {
       background-color: var(--cc-OU-svg);
       border-radius: 60px;
-      padding: var(--pad-sm);
+      padding: var(--pad-mar-sm);
     }
 
 
@@ -262,8 +262,8 @@ body {
       font-family: var(--ff-buttons);
       font-weight: bold;
       width: 185px;
-      padding-inline: var(--pad-med);
-      padding-block: var(--pad-med);
+      padding-inline: var(--pad-mar-med);
+      padding-block: var(--pad-mar-med);
       box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
 
@@ -281,8 +281,8 @@ body {
       font-family: var(--ff-buttons);
       font-weight: bold;
       width: 185px;
-      padding-inline: var(--pad-med);
-      padding-block: var(--pad-med);
+      padding-inline: var(--pad-mar-med);
+      padding-block: var(--pad-mar-med);
       box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
     
@@ -304,8 +304,8 @@ body {
       font-family: var(--ff-buttons);
       font-weight: bold;
       width: 185px;
-      padding-inline: var(--pad-med);
-      padding-block: var(--pad-med);
+      padding-inline: var(--pad-mar-med);
+      padding-block: var(--pad-mar-med);
       box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
     }
 
@@ -318,7 +318,7 @@ body {
       font-family: var(--ff-buttons);
       font-weight: 600;
       width: 100%;
-      padding: var(--pad-med);
+      padding: var(--pad-mar-med);
       border-radius: var(--br-signup-login);
       box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
       cursor: pointer;
@@ -335,7 +335,7 @@ body {
 /*#region SearchResults*/
 .banner_content {
   background-color: var(--background);
-  padding-block: var(--pad-max);
+  padding-block: var(--pad-mar-max);
 }
 
 .mural_img {
@@ -385,7 +385,7 @@ body {
 
 /*#region Profile Page*/
 .user_basic {
-  padding: var(--pad-med);
+  padding: var(--pad-mar-med);
   border-radius: var(--br-general);
   background-color: var(--cc-user-basic-bg);
   box-shadow: 0px 5px 10px 2px var(--cc-box-shadow);
@@ -394,7 +394,7 @@ body {
 .profile_menu:hover {  
   background-color: var(--background);
   color: var(--cc-txt-color2);
-  padding: var(--pad-med);
+  padding: var(--pad-mar-med);
   border-radius: var(--br-general);
   font-weight: 700;
 }
@@ -418,4 +418,61 @@ body {
   object-fit: cover;
   object-position: center;
 }
+
+.preview_content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profPic_cont {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  margin: var(--pad-mar-xlg);
+}
+
+.profInfo_cont {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 15px;
+}
+
+.profInfo_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 18px;
+}
+
+.profInfo_content {
+  font-family: var(--ff-mainTxt);
+  font-weight: normal;
+  color: var(--cc-txt-color2);
+  opacity: 90%;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.placeHolderProfile {
+  border-radius: 60px;
+}
+
+
+.uploadBtn {
+  background-color: var(--cc-sub-color);
+  cursor: pointer;
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-weight: 600;
+}
+
+
+.uploadBtn:hover {
+  background-color: var(--cc-sub-hover);
+}
 /*#endregion Profile Page*/
+
