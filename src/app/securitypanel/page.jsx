@@ -10,21 +10,36 @@ import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-ico
 
 const Security = () => {
     return (
-        <div className="profile_panel">
-            <div className="profilePanel_content">
-                <div className="edit_profile">
-                    <img src="/images/materials/streetart.jpg" alt="PUP Street Art" className="street_art" />
+        <div className="info_cont">
+            <div className="info_content">
+                <img src="/images/materials/streetart.jpg" alt="PUP Street Art" className="street_art" />
+                <div className="edit_security">
+                    <h2 className="securityInfo_label">Security</h2>
 
-                    <div className="info_content">
-                        <div className="info_preview">
+                    <div className="change_pass">
+                        <h3 className="changePass_label">Change Password</h3>
 
-                        </div>
+                        <div className="password_inputs">
+                            <div className="password flex flex-col items-start mt-4">
+                                <input type="password" placeholder="Password" className="personalInfo_inputs"/>
+                                <label className="personalInfo_labels">Password</label>
+                            </div>
+                            
+                            
+                            <div className="confirm_password flex flex-col items-start mt-4">
+                                <input type="password" placeholder="Confirm Password" className="personalInfo_inputs"/>
+                                <label className="personalInfo_labels">Confirm Password</label>
+                            </div>
 
-                        <div className="edit_profile">
+                            <div className="flex flex-row items-center gap-10 mt-8">
+                                <p>Password Strength</p>
 
+                                <button className="updatePassword_btn">Update Password</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     )
