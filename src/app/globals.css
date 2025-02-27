@@ -408,13 +408,13 @@ body {
 .street_art {
   border-radius: var(--br-general);
   position: absolute;
-  z-index: 0;
-  top: 145px;
+  z-index: -10;
+  top: 150px;
   right: 65px;
   opacity: 10%;
   filter: blur(0.3rem);
   width: 930px;
-  height: 310px;
+  height: 610px;
   object-fit: cover;
   object-position: center;
 }
@@ -429,8 +429,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  width: max-content;
+  gap: 15px;
   margin: var(--pad-mar-xlg);
 }
 
@@ -464,7 +463,6 @@ body {
 
 .uploadBtn {
   background-color: var(--cc-sub-color);
-  cursor: pointer;
   padding: var(--pad-mar-sm);
   border-radius: var(--br-general);
   font-weight: 600;
@@ -473,6 +471,64 @@ body {
 
 .uploadBtn:hover {
   background-color: var(--cc-sub-hover);
+}
+
+.personalInfo_inputs {
+  padding: var(--pad-mar-sm);
+  width: 350px;
+  border-radius: var(--br-general);
+  opacity: 0.8;
+  color: var(--cc-txt-color1);
+}
+
+.personalInfo_labels {
+  color: var(--cc-txt-color2);
+  margin-left: var(--pad-mar-sm);
+  margin-top: var(--pad-mar-sm);
+  font-family: var(--ff-mainTxt);
+  letter-spacing: 1.5px;
+  font-size: 14px;
+}
+
+.edit_security {
+  margin-inline: var(--pad-mar-xlg);
+  margin-block: var(--pad-mar-xlg);
+}
+
+.securityInfo_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 24px;
+}
+
+.change_pass {
+  margin-inline: var(--pad-mar-lg);
+  margin-block: var(--pad-mar-med);
+}
+
+.changePass_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 16px; 
+}
+ 
+.updateInformation_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-family: var(--ff-buttons);
+  font-weight: 600;
+  margin-inline: 55px;
+}
+
+.updatePassword_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-family: var(--ff-buttons);
+  font-weight: 600;
 }
 /*#endregion Profile Page*/
 
