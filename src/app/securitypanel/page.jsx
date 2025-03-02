@@ -12,7 +12,6 @@ const Security = () => {
     return (
         <div className="info_cont">
             <div className="info_content">
-                <img src="/images/materials/streetart.jpg" alt="PUP Street Art" className="street_art" />
                 <div className="edit_security">
                     <h2 className="securityInfo_label">Security</h2>
 

@@ -78,8 +78,12 @@ const SignUp = () => {
             setError("Passwords do not match.");
             return;
         }
+
+        const yearInt = parseInt(year);
+        const monthInt = parseInt(month);
+        const dayInt = parseInt(day);
     
-        const age = calculateAge(year, month, day);
+        const age = calculateAge(yearInt, monthInt, dayInt);
         await handleSignup(name, email, password, month, day, year, age);
     };
 

@@ -12,7 +12,6 @@ const PersonalInfo = () => {
     return (
         <div className="info_cont">
             <div className="info_content">
-                <img src="/images/materials/streetart.jpg" alt="PUP Street Art" className="street_art" />
                 <div className="preview_content">
                     <div className="profPic_cont">
                         <Image src="/images/materials/placeholderImg.png" alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />          
