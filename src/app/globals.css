@@ -405,10 +405,20 @@ body {
   border-radius: var(--br-general);
 }
 
+.info_content {
+  background-image: url('/images/materials/streetart.jpg');
+  background-position-x: center;
+  background-position-y: center;
+  object-fit: cover;
+  padding-block: var(--pad-mar-min);
+  opacity: 0.9;
+  border-radius: var(--br-general);
+}
+
 .street_art {
   border-radius: var(--br-general);
   position: absolute;
-  z-index: -10;
+  z-index: -1;
   top: 150px;
   right: 65px;
   opacity: 10%;
@@ -529,6 +539,38 @@ body {
   border-radius: var(--br-general);
   font-family: var(--ff-buttons);
   font-weight: 600;
+}
+
+.my_library {
+  margin-inline: var(--pad-mar-xlg);
+  margin-block: var(--pad-mar-xlg);
+}
+
+.libraryInfo_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 24px;  
+}
+
+.upload_data {
+  margin-inline: var(--pad-mar-lg);
+  margin-block: var(--pad-mar-med);  
+}
+
+.upload_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 16px;   
+}
+
+.upload_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-family: var(--ff-buttons);
+  font-weight: 600;  
 }
 /*#endregion Profile Page*/
 

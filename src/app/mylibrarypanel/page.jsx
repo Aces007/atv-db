@@ -10,19 +10,20 @@ import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-ico
 
 const MyLibrary = () => {
     return (
-        <div className="profile_panel">
-            <div className="profilePanel_content">
-                <div className="edit_profile">
-                    <img src="/images/materials/streetart.jpg" alt="PUP Street Art" className="street_art" />
+        <div className="info_cont">
+            <div className="info_content">
+                <div className="my_library">
+                    <h2 className="libraryInfo_label">My Library</h2>
 
-                    <div className="info_content">
-                        <div className="info_preview">
-
+                    <div className="upload_data flex flex-row justify-between">
+                        <div>
+                            <h3 className="upload_label">Uploads</h3>
                         </div>
 
-                        <div className="edit_profile">
-
+                        <div>
+                            <button className="upload_btn">Upload New</button>
                         </div>
+                        
                     </div>
                 </div>
             </div>
