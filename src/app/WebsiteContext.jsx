@@ -26,13 +26,14 @@ export const WebProvider = ({ children }) => {
             if (error) throw error;
             if (!user) throw new Error('User not created');
     
-            // Format birthdate
-            const birthdate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-    
-            // Insert user details into the `Users` table
+
+            const birthdate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            console.log("Formatted Birthdate:", birthdate); // Debugging log
+
+
             const { error: insertError } = await supabase
                 .from('Users')
-                .insert([{ id: user.id, name, email, birthdate, age }]);
+                .insert([{ id: user.id, name, email, birthdate, age, password }]);
     
             if (insertError) throw insertError;
     
@@ -97,13 +98,20 @@ export const WebProvider = ({ children }) => {
         try {
             const {data, error} = await supabase
                 .from('Users')
-                .select('*')
+                .select('name, email, birthdate, age, password')
                 .eq("id", userId)
                 .single()
 
             if (error) throw (error);
 
             setUserInfo(data);
+
+            return {
+                full_name: data.name,
+                email: data.email,
+                birthdate: data.birthdate,
+                age: data.age,
+            };
         } catch (error) {
             console.error("Error fetching user info: ", error.message);
         }

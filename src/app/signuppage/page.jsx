@@ -50,24 +50,45 @@ const SignUp = () => {
     };    
 
     const calculateAge = (year, month, day) => {
-        const birthDate = new Date(year, month - 1, day);
+        if (!year || !month || !day) {
+            console.error("Invalid birthdate input:", { year, month, day });
+            return null; // Return null if any value is missing
+        }
+    
+        // Convert inputs to integers to avoid unexpected issues
+        const yearInt = parseInt(year, 10);
+        const monthInt = parseInt(month, 10);
+        const dayInt = parseInt(day, 10);
+    
+        if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dayInt)) {
+            console.error("Invalid number format:", { year, month, day });
+            return null;
+        }
+    
+        const birthDate = new Date(yearInt, monthInt - 1, dayInt);
         const today = new Date();
+    
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
         
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--; 
         }
+    
+        console.log("Calculated Age:", age); // Debugging log
         return age;
     };
+    
     
 
     const onSubmit = async (e) => {
         e.preventDefault();
         setError(null);
     
-        const { name, email, password, confirmPassword, birthdate } = formData;
-        const { month, day, year } = birthdate;
+        const { name, email, password, confirmPassword, birthdate } = formData || {};
+        const { month, day, year } = birthdate || {};
+    
+        console.log("Birthdate values before validation:", { year, month, day });
     
         if (!name || !email || !password || !confirmPassword || !month || !day || !year) {
             setError("All fields are required.");
@@ -78,13 +99,33 @@ const SignUp = () => {
             setError("Passwords do not match.");
             return;
         }
-
-        const yearInt = parseInt(year);
-        const monthInt = parseInt(month);
-        const dayInt = parseInt(day);
+    
+        const months = {
+            January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+            July: 7, August: 8, September: 9, October: 10, November: 11, December: 12
+        };
+    
+        const yearInt = parseInt(year, 10);
+        const monthInt = months[month] || parseInt(month, 10);
+        const dayInt = parseInt(day, 10);
+    
+        if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dayInt)) {
+            console.error("Invalid number format after conversion:", { yearInt, monthInt, dayInt });
+            setError("Invalid birthdate. Please enter a valid date.");
+            return;
+        }
+    
+        console.log("Final Birthdate values:", { yearInt, monthInt, dayInt });
     
         const age = calculateAge(yearInt, monthInt, dayInt);
-        await handleSignup(name, email, password, month, day, year, age);
+        console.log("Calculated Age:", age);
+    
+        if (age === null || isNaN(age)) {
+            setError("Invalid birthdate. Please enter a valid date.");
+            return;
+        }
+    
+        await handleSignup(name, email, password, monthInt, dayInt, yearInt, age);
     };
 
     

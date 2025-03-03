@@ -6,9 +6,31 @@ import Link from "next/link";
 import Header from "../header/page";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+import { useWebsiteContext } from "../WebsiteContext";
+import { useState, useEffect } from "react";
+
 
 
 const PersonalInfo = () => {
+    const { fetchUserInfo, user } = useWebsiteContext();
+    const [name, setName] = useState(null);
+    const [email, setEmail] = useState(null);
+    const [birthdate, setBirthdate] = useState(null);
+    const [age, setAge] = useState(null);
+
+    useEffect(() => {
+        console.log('userId in UserProfile:', user);
+        const getUserData = async () => {
+            const userData = await fetchUserInfo(user);
+            setName(userData.full_name);
+            setEmail(userData.userEmail);
+            setBirthdate(userData.userBirthdate)
+            setAge(userData.userAge)
+        };
+
+        getUserData();
+    }, [user]);
+
     return (
         <div className="info_cont">
             <div className="info_content">
@@ -20,7 +42,7 @@ const PersonalInfo = () => {
                     </div>
 
                     <div className="profInfo_cont">
-                        <h2 className="profInfo_content"><span className="profInfo_label">Age:</span> 22</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Age:</span> {age}</h2>
                         <h2 className="profInfo_content"><span className="profInfo_label">Course:</span> Bachelor of Science in Computer Engineering</h2>
                         <h2 className="profInfo_content"><span className="profInfo_label">PUP Email:</span> acelawrencezclavano@iskolarngbayan.edu.ph</h2>
                     </div>
