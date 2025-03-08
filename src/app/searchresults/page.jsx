@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Dropdown, DropdownTrigger, DropdownMenu } from "@nextui-org/dropdown";
 import Header from '../header/page';
+import Footer from "../footer/page";
 
 const MyForm = () => {
     const [topics, setTopics] = useState([]); // Store the list of topics
@@ -154,6 +155,8 @@ const SearchResults = () => {
             <div className="file_upload" style={{ margin: "50px" }}>
                 <MyForm />
             </div>
+
+            <Footer />
         </div>
     );
 }

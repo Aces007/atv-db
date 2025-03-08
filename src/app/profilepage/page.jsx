@@ -4,6 +4,7 @@ import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  Dropdown
 import Image from "next/image";
 import Link from "next/link";
 import Header from "../header/page";
+import Footer from "../footer/page";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
 
@@ -92,6 +93,8 @@ const Profile = () => {
                     </div>
                     
                 </div>
+
+                <Footer />
             </div>
         </div>
     )
