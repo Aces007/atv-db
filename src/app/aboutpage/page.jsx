@@ -4,6 +4,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem 
 import Image from "next/image";
 import Link from "next/link";
 import Header from "../header/page";
+import Footer from "../footer/page";
 
 const About = () => {
     return (
