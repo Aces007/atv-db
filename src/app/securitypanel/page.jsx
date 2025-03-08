@@ -38,8 +38,6 @@ const Security = () => {
                         </div>
                     </div>
                 </div>
-
-                <Footer />
             </div>
         </div>
     )
