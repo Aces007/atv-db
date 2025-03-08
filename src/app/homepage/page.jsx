@@ -4,6 +4,7 @@ import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  Dropdown
 import Image from "next/image";
 import Link from "next/link";
 import Header from "../header/page";
+import Footer from "../footer/page";
 
 
 
@@ -61,6 +62,8 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
+
+                <Footer />
             </div>
         </div>
     )

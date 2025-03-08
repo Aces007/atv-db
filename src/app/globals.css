@@ -574,3 +574,15 @@ body {
 }
 /*#endregion Profile Page*/
 
+
+/*#region Footer Page*/
+.foot_cont {
+  background-color: var(--background);
+  padding: var(--pad-mar-max);
+}
+
+.logo_footer {
+  width: 180px;
+  height: 180px;
+}
+/*#endregion Footer Page*/
