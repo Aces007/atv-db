@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useWebsiteContext } from "../WebsiteContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faPaintRoller } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faUpload } from "@fortawesome/free-solid-svg-icons";
 
 const Header = () => {
     const { user, handleLogout } = useWebsiteContext();
@@ -41,7 +41,7 @@ const Header = () => {
                                 <Link href={"./profilepage/"}><button className="profile_drop_btns font-Montserrat uppercase flex flex-row items-center gap-2"><FontAwesomeIcon icon={faUser} size="1x" color="black" />Profile</button></Link>
                             </DropdownItem>
                             <DropdownItem>
-                                <Link href={""}><button className="profile_drop_btns font-Montserrat uppercase flex flex-row items-center gap-2"><FontAwesomeIcon icon={faPaintRoller} size="1x" color="black" />Theme</button></Link>
+                                <Link href={"./uploadmaterial/"}><button className="profile_drop_btns font-Montserrat uppercase flex flex-row items-center gap-2"><FontAwesomeIcon icon={faUpload} size="1x" color="black" />Upload</button></Link>
                             </DropdownItem>
                             <DropdownItem>
                                 <Link href={""}><button className="profile_drop_btns font-Montserrat uppercase" onClick={handleLogout}>Logout</button></Link>

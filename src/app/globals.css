@@ -586,3 +586,53 @@ body {
   height: 180px;
 }
 /*#endregion Footer Page*/
+
+
+/*#region Upload */
+.uploadMaterial_content {
+  padding-inline: var(--pad-mar-max);
+  padding-block: var(--pad-mar-med);
+}
+
+.submit_labels {
+  font-family: var(--ff-mainTxt);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.material_inputs {
+  border: 1px solid var(--cc-txt-color1);
+  padding-inline: var(--pad-mar-sm);
+  padding-block: var(--pad-mar-sm);
+  width: 60%;
+}
+
+.author_inputs {
+  border: 1px solid var(--cc-txt-color1);
+  padding-inline: var(--pad-mar-sm);
+  padding-block: var(--pad-mar-sm);
+  width: 300px;
+}
+
+.submit_instructions {
+  font-family: var(--ff-mainTxt);
+  font-size: 14px;
+  opacity: 0.8;
+  letter-spacing: 5%;
+}
+
+.add_author {
+  background-color: var(--background);
+  padding: var(--pad-mar-sm);
+  color: var(--cc-txt-color2);
+  border-radius: var(--br-general);
+  font-weight: 700;
+} .add_author:hover {
+  background-color: var(--cc-main-color-hover);
+}
+
+#abstract_input {
+  border: 1px solid var(--cc-txt-color1);
+  padding: 200px;
+}
+/*#endregion Upload */
