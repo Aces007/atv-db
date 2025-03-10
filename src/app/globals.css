@@ -585,6 +585,11 @@ body {
   width: 180px;
   height: 180px;
 }
+
+.footer_links:hover {
+  text-decoration: underline;
+  font-weight: 700;
+}
 /*#endregion Footer Page*/
 
 
@@ -634,5 +639,38 @@ body {
 #abstract_input {
   border: 1px solid var(--cc-txt-color1);
   padding: 200px;
+}
+
+.material_drop {
+  padding: var(--pad-mar-med);
+  width: 30%;
+}
+
+.material_pub_drop {
+  padding: var(--pad-mar-med);
+  width: 30%;
+}
+
+.upload_material_btn {
+  background-color: var(--background);
+  padding: var(--pad-mar-sm);
+  color: var(--cc-txt-color2);
+  border-radius: var(--br-general);
+  font-weight: 700;
+} .upload_material_btn:hover {
+  background-color: var(--cc-main-color-hover);
+}
+
+.submit_material_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-med);
+  font-family: var(--ff-buttons);
+  font-size: 15px;
+  text-transform: uppercase;
+  color: var(--cc-txt-color1);
+  border-radius: var(--br-general);
+  font-weight: 700;
+} .submit_material_btn:hover {
+  background-color: var(--cc-sub-hover);
 }
 /*#endregion Upload */
