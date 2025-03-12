@@ -3,6 +3,7 @@
 import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
 import Image from "next/image";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
@@ -23,7 +24,7 @@ const Upload = () => {
         title: "",
         authors: [{firstName: "", lastName: ""}],
         abstract: "",
-        materialType: "Article",
+        materialType: "",
         publicationDate: {month: "", day: "", year: ""},
         pageCount: "",
         referenceCount: "",
@@ -58,38 +59,58 @@ const Upload = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
     
-        if (["month", "day", "year"].includes(name)) {
-            setMaterialData((prev) => ({
-                ...prev,
-                publicationDate: { ...prev.publicationDate, [name]: value },
-            }));
-        } else {
-            setMaterialData((prev) => ({
-                ...prev,
-                [name]: value,
-            }));
-        }
+        setMaterialData((prev) => {
+            if (["month", "day", "year"].includes(name)) {
+                return {
+                    ...prev,
+                    publicationDate: { ...prev.publicationDate, [name]: value },
+                };
+            } else if (["firstName", "lastName", "email"].includes(name)) {
+                return {
+                    ...prev,
+                    uploader: { ...prev.uploader, [name]: value },
+                };
+            } else if (name === "materialType") { 
+                return {
+                    ...prev,
+                    materialType: value, 
+                };
+            } else {
+                return { ...prev, [name]: value };
+            }
+        });
     };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
     
-        const publicationDate = `${materialData.publicationDate.year}-${String(materialData.publicationDate.month).padStart(2, '0')}-${String(materialData.publicationDate.day).padStart(2, '0')}`;
+    
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const { year, month, day } = materialData.publicationDate;
+
+        let publicationDate = null;
+        if (year && month && day) {
+            publicationDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        }
 
         const finalData = {
             title: materialData.title,
-            authors: JSON.stringify(materialData.authors),
+            authors: materialData.authors, // No need to stringify JSONB fields
             abstract: materialData.abstract,
-            materialType: materialData.materialType,
-            publicationDate,
-            pageCount: parseInt(materialData.pageCount, 10),
-            referenceCount: parseInt(materialData.referenceCount, 10),
-            uploader: JSON.stringify(materialData.uploader),
+            material_type: materialData.materialType,
+            publication_date: publicationDate || null, // Ensure column name matches DB
+            page_count: materialData.pageCount ? parseInt(materialData.pageCount, 10) : null,
+            reference_count: materialData.referenceCount ? parseInt(materialData.referenceCount, 10) : null,
+            uploader: materialData.uploader, // No need to stringify JSONB fields
         };
-    
-        handleUploadMaterial(finalData);
-    };    
 
+        console.log("📤 Submitting data:", finalData);
+
+        // 🔥 Use handleUploadMaterial function here!
+        await handleUploadMaterial(finalData);
+    };
+    
+    
     return (
         <div className="uploadMaterial_cont">
             <Header />
@@ -101,7 +122,7 @@ const Upload = () => {
                     <div className="material_title">
                         <h2 className="submit_labels">Title of Material</h2>
                         <div className="mx-6 my-4">
-                            <input type="text" placeholder="Title of Material" className="material_inputs" value={materialData.title} onChange={handleInputChange} />
+                            <input type="text" name="title" placeholder="Title of Material" className="material_inputs" value={materialData.title} onChange={handleInputChange} />
                             <h3 className="submit_instructions">Enter the title of the submitted material (including capitalization).</h3>
                         </div>
                     </div>
@@ -109,21 +130,23 @@ const Upload = () => {
                     <div className="material_author">
                         <h2 className="submit_labels">Author(s)</h2>
                         <div className="mx-6 my-4 flex flex-col items-start gap-4">
-                            {authors.map((_, index) => (
+                            {materialData.authors.map((_, index) => (
                                 <div key={index} className="flex flex-col gap-2">
                                     <input
                                         type="text"
+                                        name="firstName"
                                         placeholder="First Name"
                                         className="author_inputs"
                                         value={materialData.authors.firstName} 
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleAuthorChange(index, "firstName", e.target.value)}
                                     />
                                     <input
                                         type="text"
+                                        name="lastName"
                                         placeholder="Last Name"
                                         className="author_inputs"
                                         value={materialData.authors.lastName} 
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleAuthorChange(index, "lastName", e.target.value)}
                                     />
                                 </div>
                             ))}
@@ -134,14 +157,14 @@ const Upload = () => {
 
                     <div className="material_abstract">
                         <h2 className="submit_labels">Abstract</h2>
-                        <textarea name="Abstract" id="abstract_input" className="mx-6 my-4" value={materialData.abstract} onChange={handleInputChange} ></textarea>
+                        <textarea name="abstract" id="abstract_input" className="mx-6 my-4" value={materialData.abstract} onChange={handleInputChange} ></textarea>
                     </div>
 
                     <div className="material_type">
                         <h2 className="submit_labels">Material Type</h2>
 
                         <div className="material_type_select">
-                            <select name="Material Type" className="material_drop mx-6 my-4" value={materialData.materialType} onChange={handleInputChange}> 
+                            <select name="materialType" className="material_drop mx-6 my-4" value={materialData.materialType} onChange={handleInputChange}> 
                                 <option value="Article">Article</option>
                                 <option value="Book">Book</option>
                                 <option value="Report">Report</option>
@@ -157,22 +180,22 @@ const Upload = () => {
                             <label htmlFor="" className="font-Red_Hat_Display font-medium underline text-min">Publication Date</label>
 
                             <div className='flex flex-row justify-around gap-10 my-4'>
-                                <select name="month" value={formData.birthdate.month} onChange={handleInputChange} className="material_pub_drop">
+                                <select name="month" value={materialData.publicationDate.month} onChange={handleInputChange} className="material_pub_drop">
                                     <option value="">Month</option>
                                     {months.map((month, index) => (
                                         <option key={index} value={month}>{month}</option>
                                     ))}
                                 </select>
 
-                                <select name="day" value={formData.birthdate.day} onChange={handleInputChange} className="material_pub_drop">
+                                <select name="day" value={materialData.publicationDate.day} onChange={handleInputChange} className="material_pub_drop">
                                     <option value="">Day</option>
                                     {days.map((day, index) => (
                                         <option key={index} value={day}>{day}</option>
                                     ))}
                                 </select>
 
-                                <select name="year" value={formData.birthdate.year} onChange={handleInputChange} className="material_pub_drop">
-                                <option value="">Year</option>
+                                <select name="year" value={materialData.publicationDate.year} onChange={handleInputChange} className="material_pub_drop">
+                                    <option value="">Year</option>
                                     {years.map((year, index) => (
                                         <option key={index} value={year}>{year}</option>
                                     ))}
@@ -184,7 +207,7 @@ const Upload = () => {
                             <label htmlFor="" className="font-Red_Hat_Display font-medium underline text-min">Page Count</label>
 
                             <div className="my-4">
-                                <input type="text" placeholder="Page Count" className="material_inputs" value={materialData.pageCount} onChange={handleInputChange}/>
+                                <input type="text"name="pageCount" placeholder="Page Count" className="material_inputs" value={materialData.pageCount} onChange={handleInputChange}/>
                                 <h3 className="submit_instructions">Enter the number of pages found in the submitted material.</h3>
                             </div>
                         </div>
@@ -193,7 +216,7 @@ const Upload = () => {
                             <label htmlFor="" className="font-Red_Hat_Display font-medium underline text-min">Number of References</label>
 
                             <div className="my-4">
-                                <input type="text" placeholder="References Count" className="material_inputs" value={materialData.referenceCount} onChange={handleInputChange}/>
+                                <input type="text" name="referenceCount" placeholder="References Count" className="material_inputs" value={materialData.referenceCount} onChange={handleInputChange}/>
                                 <h3 className="submit_instructions">Enter the number of references used in relation to the submitted material.</h3>
                             </div>
                         </div>
@@ -214,6 +237,7 @@ const Upload = () => {
                         <div className="flex flex-col gap-2 mx-6 my-4">
                             <input
                                 type="text"
+                                name="firstName"
                                 placeholder="First Name"
                                 className="author_inputs"
                                 value={materialData.uploader.firstName} 
@@ -221,6 +245,7 @@ const Upload = () => {
                             />
                             <input
                                 type="text"
+                                name="lastName"
                                 placeholder="Last Name"
                                 className="author_inputs"
                                 value={materialData.uploader.lastName} 
@@ -228,6 +253,7 @@ const Upload = () => {
                             />
                             <input
                                 type="text"
+                                name="email"
                                 placeholder="Personal Email"
                                 className="author_inputs"
                                 value={materialData.uploader.email} 
@@ -235,6 +261,7 @@ const Upload = () => {
                             />
                         </div>
                     </div>
+                    
                     <button className="submit_material_btn my-6" onClick={handleSubmit}>Submit Material</button>
                 </form>
             </div>
