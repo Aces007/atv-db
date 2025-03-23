@@ -8,6 +8,8 @@ import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { useState } from "react";
+import { chatGPTRequest } from "@/lib/openaiClient";
+
 
 
 const Upload = () => {
@@ -85,34 +87,96 @@ const Upload = () => {
         });
     };
     
+
+    // Extracting Data from PDF & integration to fields
+    const extractFieldsFromPDF = async (text) => {
+        const response = chatGPTRequest;
+
+        const extractedData = JSON.parse(response.choices[0].message.content);
+
+        setMaterialData((prev) => ({
+            ...prev,
+            title: extractedData.title || "",
+            authors: extractedData.authors || [{ firstName: "", lastName: ""}],
+            abstract: extractedData.abstract || "",
+            materialType: extractedData.materialType || "",
+        }));
+
+        console.log("Extracted Data: ", extractedData);  
+    }
+    
+    // Uploading PDF function
+    const uploadPDFToSupabase = async (file) => {
+        const { data, error } = await supabase
+            .storage
+            .from("pdfs")
+            .upload(`uploads/$(file.name)`, file);
+        
+        if (error) {
+            console.error("PDF Upload Failed:", error);
+            return null;
+        }
+
+        console.log("PDF Uploaded Successfully:", data);
+        return data.path;
+    }
+
+
+    // Uploading PDF and fields
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+    
+        const formData = new FormData();
+        formData.append("file", file);
+    
+        // Upload PDF to Supabase first
+        const pdfUrl = await uploadPDFToSupabase(file);
+        if (!pdfUrl) {
+            console.error("PDF Upload Failed");
+            return;
+        }
+        
+        console.log("PDF Uploaded to Supabase:", pdfUrl);
+    
+        try {
+            
+            const response = await fetch("/api/extractedText", {  
+                method: "POST",
+                body: formData,
+            });
+    
+            const data = await response.json();
+            if (data.text) {
+                console.log("📜 Extracted Text:", data.text);
+                extractFieldsFromPDF(data.text); 
+            } else {
+                console.error("Error extracting text:", data.error);
+            }
+        } catch (error) {
+            console.error("Upload failed:", error);
+        }
+    };
+    
+    
     
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         const { year, month, day } = materialData.publicationDate;
-
-        let publicationDate = null;
-        if (year && month && day) {
-            publicationDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        }
-
+        const publicationDate = year && month && day ? `${year}-${month}-${day}` : null;
+    
         const finalData = {
-            title: materialData.title,
-            authors: materialData.authors, // No need to stringify JSONB fields
-            abstract: materialData.abstract,
-            material_type: materialData.materialType,
-            publication_date: publicationDate || null, // Ensure column name matches DB
-            page_count: materialData.pageCount ? parseInt(materialData.pageCount, 10) : null,
-            reference_count: materialData.referenceCount ? parseInt(materialData.referenceCount, 10) : null,
-            uploader: materialData.uploader, // No need to stringify JSONB fields
+            ...materialData,
+            publication_date: publicationDate,
         };
-
-        console.log("📤 Submitting data:", finalData);
-
-        // 🔥 Use handleUploadMaterial function here!
+    
+        console.log("Submitting Data:", finalData);
+    
         await handleUploadMaterial(finalData);
     };
+    
     
     
     return (
@@ -122,6 +186,14 @@ const Upload = () => {
             <h1 className="font-Red_Hat_Display uppercase font-black text-sm mx-10">Submit Material</h1>
             <div className="uploadMaterial_content">
                 <form action="submit">
+                    <div className="material_upload">
+                        <h2 className="submit_labels">Upload Material</h2>
+
+                        <div className="mx-6 my-4 flex flex-row items-center gap-4">
+                            <input type="file" accept="application/pdf" onChange={handleFileUpload} className="upload_material_btn">Upload</input>
+                            <h3 className="submit_instructions">Use this to find material to be submitted.</h3>
+                        </div>
+                    </div>
 
                     <div className="material_title">
                         <h2 className="submit_labels">Title of Material</h2>
@@ -226,14 +298,6 @@ const Upload = () => {
                         </div>
                     </div>
 
-                    <div className="material_upload">
-                        <h2 className="submit_labels">Upload Material</h2>
-
-                        <div className="mx-6 my-4 flex flex-row items-center gap-4">
-                            <button className="upload_material_btn">Upload</button>
-                            <h3 className="submit_instructions">Use this to find material to be submitted.</h3>
-                        </div>
-                    </div>
 
                     <div className="uploader_contact">
                         <h2 className="submit_labels">Your Contact Details</h2>
