@@ -17,8 +17,12 @@ const Upload = () => {
     const [success, setSuccess] = useState(false);
 
     const addAuthor = () => {
-        setAuthors([...authors, { firstName: "", lastName: "" }]);
+        setMaterialData((prev) => ({
+            ...prev,
+            authors: [...prev.authors, { firstName: "", lastName: "" }]
+        }));
     };
+    
 
     const [materialData, setMaterialData] = useState({
         title: "",
@@ -261,9 +265,20 @@ const Upload = () => {
                             />
                         </div>
                     </div>
-                    
+
                     <button className="submit_material_btn my-6" onClick={handleSubmit}>Submit Material</button>
                 </form>
+
+
+                <button type="button" onClick={addAuthor} className="add_author">" Cite </button>
+                    {materialData.authors.map((author, index) => (
+                    <span key={index}>
+                        {author.lastName}, {author.firstName.charAt(0)}.
+                        {index !== materialData.authors.length - 1 ? ", " : ""}
+                    </span>
+                    ))}
+                    ({materialData.publicationDate.year}) {materialData.title}
+
             </div>
             <Footer />
         </div>
