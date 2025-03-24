@@ -8,7 +8,7 @@ import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { useState } from "react";
-import { chatGPTRequest } from "@/lib/openaiClient";
+
 
 
 
@@ -130,37 +130,35 @@ const Upload = () => {
         const formData = new FormData();
         formData.append("file", file);
     
-        // Upload PDF to Supabase first
-        const pdfUrl = await uploadPDFToSupabase(file);
-        if (!pdfUrl) {
-            console.error("PDF Upload Failed");
-            return;
-        }
-        
-        console.log("PDF Uploaded to Supabase:", pdfUrl);
-    
         try {
-            
-            const response = await fetch("/api/extractedText", {  
+            const response = await fetch("/api/openai", {
                 method: "POST",
                 body: formData,
             });
     
             const data = await response.json();
-            if (data.text) {
-                console.log("📜 Extracted Text:", data.text);
-                extractFieldsFromPDF(data.text); 
-            } else {
-                console.error("Error extracting text:", data.error);
+            if (!data.extractedText) {
+                console.error("Error: No Text extracted from PDF")
+                return;
             }
+
+            console.log("Extracted PDF Text:", data.extractedText);
+
+            const aiResponse = await fetch("api/openai", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: data.extractedText }),
+            })
+
+            const aiData = await aiResponse.json();
+            console.log("OpenAI Response:", aiData.response);
         } catch (error) {
-            console.error("Upload failed:", error);
+            console.error("Error uploading file:", error);
         }
     };
     
     
     
-
     const handleSubmit = async (e) => {
         e.preventDefault();
     
@@ -190,7 +188,7 @@ const Upload = () => {
                         <h2 className="submit_labels">Upload Material</h2>
 
                         <div className="mx-6 my-4 flex flex-row items-center gap-4">
-                            <input type="file" accept="application/pdf" onChange={handleFileUpload} className="upload_material_btn">Upload</input>
+                            <input placeholder="Upload" type="file" accept="application/pdf" onChange={handleFileUpload} className="upload_material_btn" />
                             <h3 className="submit_instructions">Use this to find material to be submitted.</h3>
                         </div>
                     </div>
