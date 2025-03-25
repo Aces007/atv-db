@@ -25,8 +25,7 @@ const Header = () => {
             </div>
 
             <div className="header_right flex flex-row items-center gap-max">
-                <a href={'./aboutpage/'} className="about_btns font-Montserrat font-bold uppercase">About</a>
-                <a href="https://www.pup.edu.ph/ous/" target="_blank" className="about_btns font-Montserrat font-bold uppercase">PUP OUS</a>
+                <a href={'./aboutpage/'} className="about_btns font-Montserrat font-bold uppercase">About ATV</a>
                 
                 
                 {user ? (
