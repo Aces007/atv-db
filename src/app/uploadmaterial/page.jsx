@@ -9,23 +9,11 @@ import Header from "../header/page";
 import Footer from "../footer/page";
 import { useState } from "react";
 
-
-
-
 const Upload = () => {
     const { handleUploadMaterial } = useWebsiteContext();
     const [authors, setAuthors] = useState([{ firstName: "", lastName: "" }]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
-
-    const addAuthor = () => {
-        setMaterialData((prev) => ({
-            ...prev,
-            authors: [...prev.authors, { firstName: "", lastName: "" }]
-        }));
-    };
-    
-
     const [materialData, setMaterialData] = useState({
         title: "",
         authors: [{firstName: "", lastName: ""}],
@@ -36,20 +24,19 @@ const Upload = () => {
         referenceCount: "",
         uploader: { firstName: "", lastName: "", email: "" },
     })
-
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        birthdate: { month: "", day: "", year: "",},
-    });
     
+    const addAuthor = () => {
+        setMaterialData((prev) => ({
+            ...prev,
+            authors: [...prev.authors, { firstName: "", lastName: "" }]
+        }));
+    };
+    
+    // For the Date Field
     const months = [
         "January", "February", "March", "April", "May", "June", 
         "July", "August", "September", "October", "November", "December"
     ];
-
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
     const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
@@ -90,36 +77,59 @@ const Upload = () => {
 
     // Extracting Data from PDF & integration to fields
     const extractFieldsFromPDF = async (text) => {
-        const response = chatGPTRequest;
-
-        const extractedData = JSON.parse(response.choices[0].message.content);
-
-        setMaterialData((prev) => ({
-            ...prev,
-            title: extractedData.title || "",
-            authors: extractedData.authors || [{ firstName: "", lastName: ""}],
-            abstract: extractedData.abstract || "",
-            materialType: extractedData.materialType || "",
-        }));
-
-        console.log("Extracted Data: ", extractedData);  
-    }
+        try {
+            console.log("Raw AI Response:", text); 
+    
+            let extractedData;
+            try {
+                extractedData = JSON.parse(text);
+            } catch (error) {
+                console.error("Error parsing AI response:", error);
+                return;
+            }
+    
+            console.log("Extracted Data:", extractedData);
+    
+            setMaterialData((prev) => ({
+                ...prev,
+                title: extractedData.title || prev.title,
+                authors: extractedData.authors || prev.authors,
+                abstract: extractedData.abstract || prev.abstract,
+                materialType: extractedData.materialType || prev.materialType,
+            }));
+    
+            console.log("Form Updated Successfully!");
+        } catch (error) {
+            console.error("Error extracting fields:", error);
+        }
+    };
+    
     
     // Uploading PDF function
     const uploadPDFToSupabase = async (file) => {
-        const { data, error } = await supabase
-            .storage
-            .from("pdfs")
-            .upload(`uploads/$(file.name)`, file);
-        
-        if (error) {
-            console.error("PDF Upload Failed:", error);
+        try {
+            console.log("Uploading PDF:", file.name);
+    
+            const { data, error } = await supabase.storage
+                .from("pdfs")  
+                .upload(`uploads/${file.name}`, file, {
+                    cacheControl: "3600",
+                    upsert: false,
+                });
+    
+            if (error) {
+                console.error("Supabase Upload Error:", error);
+                return null;
+            }
+    
+            console.log("Upload successful. File path:", data.path);
+            return data.path;
+        } catch (err) {
+            console.error("Unexpected error in uploadPDFToSupabase:", err);
             return null;
         }
-
-        console.log("PDF Uploaded Successfully:", data);
-        return data.path;
-    }
+    };
+    
 
 
     // Uploading PDF and fields
@@ -127,6 +137,13 @@ const Upload = () => {
         const file = event.target.files[0];
         if (!file) return;
     
+        // Uploading PDF to SUPABASE
+        const filePath = await uploadPDFToSupabase(file);
+        if (!filePath) {
+            console.error("Failed to upload file to Supabase")
+            return;
+        }
+
         const formData = new FormData();
         formData.append("file", file);
     
@@ -151,12 +168,15 @@ const Upload = () => {
             })
 
             const aiData = await aiResponse.json();
-            console.log("OpenAI Response:", aiData.response);
+            
+            console.log("OpenAI Response:", aiData.aiResult);
+            
+            extractFieldsFromPDF(aiData.aiResult);
+
         } catch (error) {
             console.error("Error uploading file:", error);
         }
     };
-    
     
     
     const handleSubmit = async (e) => {
