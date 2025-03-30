@@ -109,10 +109,15 @@ const Upload = () => {
     const uploadPDFToSupabase = async (file) => {
         try {
             console.log("Uploading PDF:", file.name);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `pdfs/${fileName}`
+
+            console.log("File Uploaded is: ", filePath)
     
             const { data, error } = await supabase.storage
                 .from("pdfs")  
-                .upload(`uploads/${file.name}`, file, {
+                .upload(filePath, file, {
                     cacheControl: "3600",
                     upsert: false,
                 });
@@ -148,7 +153,7 @@ const Upload = () => {
         formData.append("file", file);
     
         try {
-            const response = await fetch("/api/openai", {
+            const response = await fetch("/api/geminiAI", {
                 method: "POST",
                 body: formData,
             });
@@ -161,7 +166,7 @@ const Upload = () => {
 
             console.log("Extracted PDF Text:", data.extractedText);
 
-            const aiResponse = await fetch("api/openai", {
+            const aiResponse = await fetch("/api/geminiAI", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt: data.extractedText }),
@@ -169,9 +174,14 @@ const Upload = () => {
 
             const aiData = await aiResponse.json();
             
-            console.log("OpenAI Response:", aiData.aiResult);
+            console.log("GeminiAI Response:", aiData.aiResult);
             
-            extractFieldsFromPDF(aiData.aiResult);
+            if (aiData && aiData.aiResult) {
+                extractFieldsFromPDF(aiData.aiResult);
+            } else {
+                console.error("Invalid AI response:", aiData);
+            }
+
 
         } catch (error) {
             console.error("Error uploading file:", error);
@@ -183,17 +193,24 @@ const Upload = () => {
         e.preventDefault();
     
         const { year, month, day } = materialData.publicationDate;
-        const publicationDate = year && month && day ? `${year}-${month}-${day}` : null;
+        
+        // Convert month name to a number
+        const monthIndex = months.indexOf(month) + 1; 
+    
+        const formattedPublicationDate = year && monthIndex && day
+            ? `${year}-${String(monthIndex).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            : null;
     
         const finalData = {
             ...materialData,
-            publication_date: publicationDate,
+            publicationDate: formattedPublicationDate, 
         };
     
         console.log("Submitting Data:", finalData);
     
         await handleUploadMaterial(finalData);
     };
+    
     
     
     
