@@ -71,6 +71,7 @@ const Upload = () => {
             } else {
                 return { ...prev, [name]: value };
             }
+            
         });
     };
     
@@ -142,13 +143,12 @@ const Upload = () => {
         const file = event.target.files[0];
         if (!file) return;
     
-        // Uploading PDF to SUPABASE
         const filePath = await uploadPDFToSupabase(file);
         if (!filePath) {
-            console.error("Failed to upload file to Supabase")
+            console.error("Failed to upload file to Supabase");
             return;
         }
-
+    
         const formData = new FormData();
         formData.append("file", file);
     
@@ -158,35 +158,41 @@ const Upload = () => {
                 body: formData,
             });
     
-            const data = await response.json();
-            if (!data.extractedText) {
-                console.error("Error: No Text extracted from PDF")
+            // Debugging: Check if response is actually JSON
+            const contentType = response.headers.get("content-type");
+            console.log("Response Content-Type:", contentType);
+    
+            const responseText = await response.text();
+            console.log("Raw response from API:", responseText);
+    
+            if (!contentType || !contentType.includes("application/json")) {
+                console.error("Invalid response format. Expected JSON.");
                 return;
             }
-
-            console.log("Extracted PDF Text:", data.extractedText);
-
-            const aiResponse = await fetch("/api/geminiAI", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: data.extractedText }),
-            })
-
-            const aiData = await aiResponse.json();
-            
-            console.log("GeminiAI Response:", aiData.aiResult);
-            
-            if (aiData && aiData.aiResult) {
-                extractFieldsFromPDF(aiData.aiResult);
-            } else {
-                console.error("Invalid AI response:", aiData);
+    
+            const data = JSON.parse(responseText);
+            console.log("Parsed JSON Response:", data);
+    
+            if (!data.extractedText) {
+                console.error("No text extracted from PDF");
+                return;
             }
-
-
+    
+            console.log("Extracted PDF Text:", data.extractedText);
+            console.log("GeminiAI Response:", data.aiResult);
+    
+            if (data.aiResult) {
+                extractFieldsFromPDF(data.aiResult);
+            } else {
+                console.error("Invalid AI response:", data);
+            }
+    
         } catch (error) {
             console.error("Error uploading file:", error);
         }
     };
+    
+    
     
     
     const handleSubmit = async (e) => {
@@ -210,7 +216,6 @@ const Upload = () => {
     
         await handleUploadMaterial(finalData);
     };
-    
     
     
     
