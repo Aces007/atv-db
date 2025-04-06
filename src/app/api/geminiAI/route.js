@@ -1,15 +1,14 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import pdfParse from "pdf-parse";
 import { NextResponse } from "next/server";
 
-export const runtime = "nodejs"; // Ensure this runs in Node.js environment
+export const runtime = "nodejs"; 
 
-const GEMINI_API_KEY = AIzaSyCBFhKNpLMefZn79RaYgzgNswD1XM-gaf8;
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+})
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-
-
-console.log("GEMINI API KEY:", process.env.GEMINI_API_KEY);
+console.log("OPENAI API KEY:", process.env.OPENAI_API_KEY);
 
 
 export async function POST(req) {
@@ -43,18 +42,43 @@ export async function POST(req) {
         }
 
         // Send Extracted Text to Gemini AI
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const response = await model.generateContent(extractedText);
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+              {
+                role: "user",
+                content: `
+                    Extract the following fields in JSON format:
+                    {
+                        "title": "",
+                        "authors": [{"firstName": "", "lastName": ""}],
+                        "abstract": "",
+                        "materialType": ""
+                    }
+                    
+                    Content:
+                    ${extractedText}`,
+              },
+            ],
+            temperature: 0.2,
+          });
         
+        let aiResult = response.choices[0].message.content.trim();
 
-        // Validate and Parse Response
-        if (!response || typeof response.text !== "function") {
-            throw new Error("Unexpected response format from Gemini AI");
+        aiResult = aiResult.replace(/```json|```/g, "").trim();
+
+        let jsonParsed;
+
+        try {
+            jsonParsed = JSON.parse(aiResult);
+        } catch (e) {
+            console.error("Failed to parse Gemini response as JSON:", aiResult);
+            throw new Error("Invalid response format. Expected JSON.");
         }
 
-        const aiResult = await response.text();
-
-        return NextResponse.json({ extractedText, aiResult }, { status: 200 });
+        console.log("Gemini AI Response Preview:", aiResult?.slice(0, 200));
+        return NextResponse.json({ extractedText, aiResult: jsonParsed }, { status: 200 });
+        
     } catch (error) {
         console.error(" Error processing PDF & Gemini AI:", error.message);
         return NextResponse.json({ error: error.message || "Failed to process file" }, { status: 500 });

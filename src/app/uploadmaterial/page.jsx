@@ -225,7 +225,7 @@ const Upload = () => {
 
             <h1 className="font-Red_Hat_Display uppercase font-black text-sm mx-10">Submit Material</h1>
             <div className="uploadMaterial_content">
-                <form action="submit">
+                <form action="submit" onSubmit={handleSubmit}>
                     <div className="material_upload">
                         <h2 className="submit_labels">Upload Material</h2>
 
@@ -253,7 +253,7 @@ const Upload = () => {
                                         name="firstName"
                                         placeholder="First Name"
                                         className="author_inputs"
-                                        value={materialData.authors.firstName} 
+                                        value={materialData.authors[index].firstName} 
                                         onChange={(e) => handleAuthorChange(index, "firstName", e.target.value)}
                                     />
                                     <input
@@ -261,7 +261,7 @@ const Upload = () => {
                                         name="lastName"
                                         placeholder="Last Name"
                                         className="author_inputs"
-                                        value={materialData.authors.lastName} 
+                                        value={materialData.authors[index].lastName} 
                                         onChange={(e) => handleAuthorChange(index, "lastName", e.target.value)}
                                     />
                                 </div>
@@ -370,7 +370,7 @@ const Upload = () => {
                         </div>
                     </div>
 
-                    <button className="submit_material_btn my-6" onClick={handleSubmit}>Submit Material</button>
+                    <button type="submit" className="submit_material_btn my-6">Submit Material</button>
                 </form>
 
 
