@@ -7,13 +7,15 @@ import { supabase } from "@/lib/supabaseClient";
 import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
-import { useState } from "react";
+import { use, useState } from "react";
 
 const Upload = () => {
     const { handleUploadMaterial } = useWebsiteContext();
     const [authors, setAuthors] = useState([{ firstName: "", lastName: "" }]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const [tags, setTags] = useState([]);
+    const [tagInput, setTagInput] = useState("");
     const [materialData, setMaterialData] = useState({
         title: "",
         authors: [{firstName: "", lastName: ""}],
@@ -75,6 +77,24 @@ const Upload = () => {
         });
     };
     
+    const handleTagInput = (e) => {
+        setTagInput(e.target.value);
+    }
+
+    const handleTagKeyDown = (e) => {
+        if ((e.key === "Enter" || e.key === "," || e.key === " ") && tagInput.trim()) {
+            e.preventDefault();
+            const newTag = tagInput.trim().replace(/,/g, '')
+            if (!tags.includes(newTag)) {
+                setTags((prev) => [...prev, newTag]);
+            }
+            setTagInput("");
+        }
+    }
+
+    const removeTag = (indexOfItem) => {
+        setTags(tags.filter((_, index) => index !== indexOfItem));
+    }
 
     // Extracting Data from PDF & integration to fields
     const extractFieldsFromPDF = async (text) => {
@@ -209,6 +229,7 @@ const Upload = () => {
     
         const finalData = {
             ...materialData,
+            tags,
             publicationDate: formattedPublicationDate, 
         };
     
@@ -273,7 +294,35 @@ const Upload = () => {
 
                     <div className="material_abstract">
                         <h2 className="submit_labels">Abstract</h2>
-                        <textarea name="abstract" id="abstract_input" className="mx-6 my-4" value={materialData.abstract} onChange={handleInputChange} ></textarea>
+                        <div className="flex flex-col items-start mx-6 my-4 gap-4">
+                            <textarea name="abstract" id="abstract_input" value={materialData.abstract} onChange={handleInputChange} ></textarea>
+                            <h3 className="submit_instructions">Enter the abstract of the submitted material.</h3>
+                        </div>
+                    </div>
+                    
+                    <div className="material_tags">
+                        <h2 className="submit_labels">Tags</h2>
+                        
+                        <div className="tag_cont mx-6 my-4 flex flex-col gap-4">
+                            <div className="tag_content">
+                                {tags.map((tag, index) => (
+                                    <div key={index} className="tag_items">
+                                        <span>{tag}</span>
+                                        <button type="button" onClick={() => removeTag(index)} className="tag_remove">x</button>
+                                    </div>
+                                ))}
+
+                                <input 
+                                    type="text" 
+                                    value={tagInput}
+                                    onChange={handleTagInput}
+                                    onKeyDown={handleTagKeyDown}
+                                    placeholder="Add Tags"
+                                    className="tag_inputs"
+                                />
+                            </div>
+                            <h3 className="submit_instructions">Enter the tags of the submitted material. Type and press `Enter`, `comma` or `space` to add a tag.</h3>
+                        </div>
                     </div>
 
                     <div className="material_type">
