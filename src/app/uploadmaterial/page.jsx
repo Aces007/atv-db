@@ -425,14 +425,13 @@ const Upload = () => {
                 </form>
 
 
+
                 <button type="button" onClick={() => setIsCitationModalOpen(true)} className="add_author"> Generate Citations </button>
                 <CitationModal
                     isOpen={isCitationModalOpen}
                     onClose={() => setIsCitationModalOpen(false)}
                     materialData={materialData}
                 />
-
-
             </div>
             
             <Footer />
