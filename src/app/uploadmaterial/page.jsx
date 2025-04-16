@@ -8,8 +8,10 @@ import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { use, useState } from "react";
+import CitationModal from "../components/CitationModal";
 
 const Upload = () => {
+    const [isCitationModalOpen, setIsCitationModalOpen] = useState(false);
     const { handleUploadMaterial } = useWebsiteContext();
     const [authors, setAuthors] = useState([{ firstName: "", lastName: "" }]);
     const [error, setError] = useState(null);
@@ -423,17 +425,17 @@ const Upload = () => {
                 </form>
 
 
-                <button type="button" onClick={addAuthor} className="add_author">" Cite </button>
-                    {materialData.authors.map((author, index) => (
-                    <span key={index}>
-                        {author.lastName}, {author.firstName.charAt(0)}.
-                        {index !== materialData.authors.length - 1 ? ", " : ""}
-                    </span>
-                    ))}
-                    ({materialData.publicationDate.year}) {materialData.title}
 
+                <button type="button" onClick={() => setIsCitationModalOpen(true)} className="add_author"> Generate Citations </button>
+                <CitationModal
+                    isOpen={isCitationModalOpen}
+                    onClose={() => setIsCitationModalOpen(false)}
+                    materialData={materialData}
+                />
             </div>
+            
             <Footer />
+            
         </div>
     )
 }
