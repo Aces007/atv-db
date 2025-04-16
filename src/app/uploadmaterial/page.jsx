@@ -8,10 +8,10 @@ import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { use, useState } from "react";
+import CitationModal from "../components/CitationModal";
 
 const Upload = () => {
-    const [citationStyle, setCitationStyle] = useState("APA");
-
+    const [isCitationModalOpen, setIsCitationModalOpen] = useState(false);
     const { handleUploadMaterial } = useWebsiteContext();
     const [authors, setAuthors] = useState([{ firstName: "", lastName: "" }]);
     const [error, setError] = useState(null);
@@ -425,54 +425,18 @@ const Upload = () => {
                 </form>
 
 
-                <div>
-  <div>
-    <label>
-      <input
-        type="radio"
-        name="citationStyle"
-        value="APA"
-        checked={citationStyle === "APA"}
-        onChange={(e) => setCitationStyle(e.target.value)}
-      />
-      APA
-    </label>
-    <label>
-      <input
-        type="radio"
-        name="citationStyle"
-        value="MLA"
-        checked={citationStyle === "MLA"}
-        onChange={(e) => setCitationStyle(e.target.value)}
-      />
-      MLA
-    </label>
-    <label>
-      <input
-        type="radio"
-        name="citationStyle"
-        value="Chicago"
-        checked={citationStyle === "Chicago"}
-        onChange={(e) => setCitationStyle(e.target.value)}
-      />
-      Chicago
-    </label>
-  </div>
-
-  <button type="button" onClick={addAuthor} className="add_author">Cite</button>
-
-  {materialData.authors.map((author, index) => (
-    <span key={index}>
-      {author.lastName}, {author.firstName.charAt(0)}.
-      {index !== materialData.authors.length - 1 ? ", " : ""}
-    </span>
-  ))}
-  ({materialData.publicationDate.year}) {materialData.title}
-</div>
+                <button type="button" onClick={() => setIsCitationModalOpen(true)} className="add_author"> Generate Citations </button>
+                <CitationModal
+                    isOpen={isCitationModalOpen}
+                    onClose={() => setIsCitationModalOpen(false)}
+                    materialData={materialData}
+                />
 
 
             </div>
+            
             <Footer />
+            
         </div>
     )
 }
