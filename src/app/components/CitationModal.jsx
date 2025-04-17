@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 
 const formatCitation = (data, style) => {
-    const { authors, title, publicationDate } = data;
+    const { authors, title, publicationDate, pageCount } = data;
     const doi = data.doi || "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1936-4490.2001.tb00260.x";
     const authorText = authors.map((a) => `${a.lastName}, ${a.firstName.charAt(0)}.`).join(", ");
     const fullAuthorTextMLA = authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ");
     const year = publicationDate?.year || "n.d.";
     const formattedDate = `${year}`;
-    const journal = "Canadian Journal of Administrative Sciences / Revue Canadienne Des Sciences De L Administration";
+    const journal = "Polytechnic University of the Philippines";
     const volume = "18";
     const issue = "4";
-    const pages = "244–256";
+    const pages = `${pageCount}`;
 
     switch (style) {
         case "APA":
@@ -41,8 +41,6 @@ const CitationModal = ({ isOpen, onClose, materialData }) => {
         <div className="modal-overlay">
             <div className="modal-content">
                 <button onClick={onClose} className="modal-close">✕</button>
-
-                <h2 className="modal-title">Generated Citation</h2>
 
                 <div className="radio-group my-4">
                     <label>

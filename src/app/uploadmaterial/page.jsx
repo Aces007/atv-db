@@ -8,10 +8,10 @@ import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { use, useState } from "react";
-import CitationModal from "../components/CitationModal";
+import CitationModal from "../components/CitationModal"; //Citation
 
 const Upload = () => {
-    const [isCitationModalOpen, setIsCitationModalOpen] = useState(false);
+    const [isCitationModalOpen, setIsCitationModalOpen] = useState(false); // Citation
     const { handleUploadMaterial } = useWebsiteContext();
     const [authors, setAuthors] = useState([{ firstName: "", lastName: "" }]);
     const [error, setError] = useState(null);
@@ -336,6 +336,7 @@ const Upload = () => {
                                 <option value="Book">Book</option>
                                 <option value="Report">Report</option>
                                 <option value="Thesis">Thesis</option>
+                                <option value="Journal">Journal</option>
                             </select>
                         </div>
                     </div>
@@ -426,8 +427,8 @@ const Upload = () => {
 
 
 
-                <button type="button" onClick={() => setIsCitationModalOpen(true)} className="add_author"> Generate Citations </button>
-                <CitationModal
+                <button type="button" onClick={() => setIsCitationModalOpen(true)} className="add_author"> Generate Citations </button> 
+                <CitationModal // Citation
                     isOpen={isCitationModalOpen}
                     onClose={() => setIsCitationModalOpen(false)}
                     materialData={materialData}
