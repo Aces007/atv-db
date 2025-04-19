@@ -10,6 +10,7 @@ import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-ico
 
 import PersonalInfo from "../personalinfopanel/page";
 import Security from "../securitypanel/page";
+import Bookmarks from "../bookmarkspanel/page";
 
 import { useState, useEffect } from "react";
 import { useWebsiteContext } from "../WebsiteContext";
@@ -78,12 +79,18 @@ const Profile = () => {
                                 onClick={() => setSelectedSection("Security")}
                             >
                                     <FontAwesomeIcon icon={faLock} size="1x" className="profileSVGs" />Security</button>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("Bookmarks")}
+                            >
+                                    <FontAwesomeIcon icon={faBook} size="1x" className="profileSVGs" />Bookmarks</button>
                         </div>
                     </div>
                     
                     <div className="right_panel">
                         {selectedSection === "PersonalInfo" && <PersonalInfo />}
                         {selectedSection === "Security" && <Security />}
+                        {selectedSection === "Bookmarks" && <Bookmarks />}
                     </div>
                     
                 </div>
