@@ -11,7 +11,7 @@ const UserProfile = () => {
     fullname: "Juan G. Dela Cruz",
     course: "BS Computer Enineering",
     email: "Juan.DelaCruz@gmail.com",
-    mobile: "09123456789",
+    mobile: "09123456489",
     story: "I am outgoing, dedicated, and open-minded. I get access to people and adjust to changes with ease. I believe that a person should work on developing their professional skills and learning new things all the time. Currently, I am looking for new career opportunities my current job position cannot provide.",
     avatar: "https://via.placeholder.com/100" // Placeholder image
   };
