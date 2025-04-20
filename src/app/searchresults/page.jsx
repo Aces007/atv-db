@@ -9,7 +9,8 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons"; // Filled star
-import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons"; // Outline star
+import { faStar as regularStar } from "@fortawesome/free-solid-svg-icons"; // Outline star
+
 
 
 const SearchResults = () => {
@@ -282,7 +283,7 @@ const SearchResults = () => {
   />
 </button>
 
-            </
+            <div>
                 key={index}
                 style={{
                   backgroundColor: "#fff",
@@ -292,7 +293,7 @@ const SearchResults = () => {
                   transition: "transform 0.3s ease",
                   cursor: "pointer",
                 }}
-              >
+              </div>
                 <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "#333" }}>
                   {res.title}
                 </h4>
