@@ -47,6 +47,7 @@ const SearchResults = () => {
         // Remove from local state
         setBookmarks(bookmarks.filter((b) => b.title !== item.title));
         setBookmarkedTitles(bookmarkedTitles.filter((t) => t !== item.title));
+
         alert("Removed bookmark");
       } else {
         // Bookmark: add to Supabase
@@ -63,7 +64,8 @@ const SearchResults = () => {
         // Add to local state
         setBookmarks([...bookmarks, item]);
         setBookmarkedTitles([...bookmarkedTitles, item.title]);
-        alert("Bookmarked successfully");        
+
+        alert("Bookmarked successfully");
       }
     } catch (err) {
       console.error("Bookmarking error:", err.message);
@@ -144,7 +146,7 @@ const SearchResults = () => {
     <div className="search_cont">
       <div className="search_content">
         <Header />
-    
+
         <div className="banner_cont">
           <img
             src="/images/materials/pup_mural.png"
