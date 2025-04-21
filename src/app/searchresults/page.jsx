@@ -46,6 +46,7 @@ const SearchResults = () => {
         // Remove from local state
         setBookmarks(bookmarks.filter((b) => b.title !== item.title));
         setBookmarkedTitles(bookmarkedTitles.filter((t) => t !== item.title));
+
         alert("Removed bookmark");
       } else {
         // Bookmark: add to Supabase
@@ -62,7 +63,8 @@ const SearchResults = () => {
         // Add to local state
         setBookmarks([...bookmarks, item]);
         setBookmarkedTitles([...bookmarkedTitles, item.title]);
-        alert("Bookmarked successfully");        
+
+        alert("Bookmarked successfully");
       }
     } catch (err) {
       console.error("Bookmarking error:", err.message);
@@ -143,7 +145,7 @@ const SearchResults = () => {
     <div className="search_cont">
       <div className="search_content">
         <Header />
-    
+
         <div className="banner_cont">
           <img
             src="/images/materials/pup_mural.png"
@@ -282,44 +284,8 @@ const SearchResults = () => {
   />
 </button>
 
-            </
-                key={index}
-                style={{
-                  backgroundColor: "#fff",
-                  padding: "15px",
-                  borderRadius: "10px",
-                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                  transition: "transform 0.3s ease",
-                  cursor: "pointer",
-                }}
-              >
-                <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "#333" }}>
-                  {res.title}
-                </h4>
-                <p style={{ color: "#555", marginBottom: "10px", fontSize: "14px" }}>
-                  {res.abstract}
-                </p>
-                <Link href={res.link || "#"}>
-                  <div
-                    style={{
-                      display: "inline-block",
-                      backgroundColor: "#FFE200",
-                      color: "black",
-                      padding: "10px 20px",
-                      borderRadius: "5px",
-                      textDecoration: "none",
-                      textAlign: "center",
-                      fontFamily: "Montserrat",
-                      fontWeight: "bold",
-                      fontSize: "10px",
-                      width: "100%",
-                      transition: "background-color 0.3s",
-                    }}
-                  >
-                    Abstract
-                  </div>
-                </Link>
-              </div>
+            </div>
+          
             ))
           ) : (
             <div
