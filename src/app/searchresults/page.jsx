@@ -8,12 +8,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient"; 
 import { Lock, FileText, Share2 } from "lucide-react"; 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons"; // Filled star
+import { faStar as regularStar } from "@fortawesome/free-solid-svg-icons"; // Outline star
 
 
 const SearchResults = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
+  const [bookmarks, setBookmarks] = useState([]);
+  const [bookmarkedTitles, setBookmarkedTitles] = useState([]);
+
 
   // Filter states
   const [sortBy, setSortBy] = useState("date");
@@ -33,6 +39,60 @@ const SearchResults = () => {
       }
     }
   };
+
+
+  const handleBookmark = async (item) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+  
+    if (!user) {
+      alert("Please sign in to save bookmarks.");
+      return;
+    }
+  
+    const isBookmarked = bookmarkedTitles.includes(item.title);
+  
+    try {
+      if (isBookmarked) {
+        // Unbookmark: remove from Supabase
+        const { error } = await supabase
+          .from("Bookmarks")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("title", item.title);
+  
+        if (error) throw error;
+  
+        // Remove from local state
+        setBookmarks(bookmarks.filter((b) => b.title !== item.title));
+        setBookmarkedTitles(bookmarkedTitles.filter((t) => t !== item.title));
+
+        alert("Removed bookmark");
+      } else {
+        // Bookmark: add to Supabase
+        const { error } = await supabase.from("Bookmarks").insert([
+          {
+            user_id: user.id,
+            title: item.title,
+            abstract: item.abstract || null,
+          },
+        ]);
+  
+        if (error) throw error;
+  
+        // Add to local state
+        setBookmarks([...bookmarks, item]);
+        setBookmarkedTitles([...bookmarkedTitles, item.title]);
+
+        alert("Bookmarked successfully");
+      }
+    } catch (err) {
+      console.error("Bookmarking error:", err.message);
+      alert("Failed to update bookmark.");
+    }
+  };
+  
 
   const fetchMaterialsData = async (query) => {
     const trimmedQuery = query.trim();
@@ -59,8 +119,32 @@ const SearchResults = () => {
       console.error("Unexpected error:", error);
       setLoading(false);
     }
-  };  
-
+  };
+  
+  
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+    
+      if (user) {
+        const { data, error } = await supabase
+          .from("Bookmarks")
+          .select("*")
+          .eq("user_id", user.id);
+    
+        if (!error && data) {
+          setBookmarks(data);
+          setBookmarkedTitles(data.map((b) => b.title));
+        }
+      }
+    };
+  
+    fetchBookmarks();
+  }, []);
+  
+  
   useEffect(() => {
     if (inputValue.trim()) {
       fetchMaterialsData(inputValue);
@@ -283,6 +367,63 @@ const SearchResults = () => {
           ) : results.length > 0 ? (
             results.map((res, index) => (
               <div
+              key={index}
+              style={{
+                backgroundColor: "#fff",
+                padding: "15px",
+                borderRadius: "10px",
+                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                position: "relative", // for icon placement
+              }}
+            >
+              <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "#333" }}>
+                {res.title}
+              </h4>
+              <p style={{ color: "#555", marginBottom: "10px", fontSize: "14px" }}>
+                {res.abstract}
+              </p>
+          
+              <Link href={res.link || "#"}>
+                <div
+                  style={{
+                    display: "inline-block",
+                    backgroundColor: "#FFE200",
+                    color: "black",
+                    padding: "10px 20px",
+                    borderRadius: "5px",
+                    textDecoration: "none",
+                    textAlign: "center",
+                    fontFamily: "Montserrat",
+                    fontWeight: "bold",
+                    fontSize: "10px",
+                    width: "100%",
+                    transition: "background-color 0.3s",
+                  }}
+                >
+                  Abstract
+                </div>
+              </Link>
+          
+              {/* Bookmark Icon */}
+              <button
+  onClick={() => handleBookmark(res)}
+  style={{
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+  }}
+  title="Bookmark"
+>
+  <FontAwesomeIcon
+    icon={bookmarkedTitles.includes(res.title) ? solidStar : regularStar}
+    style={{ color: "#FFD700", fontSize: "20px" }}
+  />
+</button>
+
+            <div>
                 key={index}
                 className="bg-white flex items-start gap-6 border border-black rounded-md shadow-md"
                 style={{ width: "1000px", height: "200px" }}
@@ -348,6 +489,24 @@ const SearchResults = () => {
                       : 'Unknown Date'}
                   </h5>
                 </div>
+
+              <div>
+                style={{
+                  backgroundColor: "#fff",
+                  padding: "15px",
+                  borderRadius: "10px",
+                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                  transition: "transform 0.3s ease",
+                  cursor: "pointer",
+                }}
+              </div>
+                <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "#333" }}>
+                  {res.title}
+                </h4>
+                <p style={{ color: "#555", marginBottom: "10px", fontSize: "14px" }}>
+                  {res.abstract}
+                </p>
+
 
                 <Link href={res.link || "#"}>
                   <div

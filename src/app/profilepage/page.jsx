@@ -1,19 +1,18 @@
 "use client";
 
-import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faLock, faBook } from "@fortawesome/free-solid-svg-icons";
 
 import PersonalInfo from "../personalinfopanel/page";
 import Security from "../securitypanel/page";
+import Bookmarks from "../bookmarkspanel/page";
 
 import { useState, useEffect } from "react";
 import { useWebsiteContext } from "../WebsiteContext";
-
 
 const Profile = () => {
     const [selectedSection, setSelectedSection] = useState('PersonalInfo');
@@ -30,8 +29,6 @@ const Profile = () => {
             return;
         }
 
-        console.log('userId in UserProfile:', user.id); 
-
         const getUserData = async () => {
             const userData = await fetchUserInfo(user.id);
             if (!userData) {
@@ -43,7 +40,7 @@ const Profile = () => {
             setEmail(userData.userEmail);
             setBirthdate(userData.userBirthdate);
             setAge(userData.userAge);
-            setStudentNumber(userData.userStudentNumber)
+            setStudentNumber(userData.userStudentNumber);
         };
 
         getUserData();
@@ -69,29 +66,40 @@ const Profile = () => {
 
                         <div className="profile_btns flex flex-col items-start justify-around gap-5">
                             <button 
-                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                className={`profile_menu font-Montserrat text-sm flex flex-row items-center gap-4 ${selectedSection === "PersonalInfo" ? "font-bold" : ""}`}
                                 onClick={() => setSelectedSection("PersonalInfo")}
                             >
-                                    <FontAwesomeIcon icon={faUser} size="1x" className="profileSVGs" />Personal Info</button>
+                                <FontAwesomeIcon icon={faUser} size="1x" className="profileSVGs" />
+                                Personal Info
+                            </button>
                             <button 
-                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                className={`profile_menu font-Montserrat text-sm flex flex-row items-center gap-4 ${selectedSection === "Security" ? "font-bold" : ""}`}
                                 onClick={() => setSelectedSection("Security")}
                             >
-                                    <FontAwesomeIcon icon={faLock} size="1x" className="profileSVGs" />Security</button>
+                                <FontAwesomeIcon icon={faLock} size="1x" className="profileSVGs" />
+                                Security
+                            </button>
+                            <button 
+                                className={`profile_menu font-Montserrat text-sm flex flex-row items-center gap-4 ${selectedSection === "Bookmarks" ? "font-bold" : ""}`}
+                                onClick={() => setSelectedSection("Bookmarks")}
+                            >
+                                <FontAwesomeIcon icon={faBook} size="1x" className="profileSVGs" />
+                                Bookmarks
+                            </button>
                         </div>
                     </div>
-                    
+
                     <div className="right_panel">
                         {selectedSection === "PersonalInfo" && <PersonalInfo />}
                         {selectedSection === "Security" && <Security />}
+                        {selectedSection === "Bookmarks" && <Bookmarks />}
                     </div>
-                    
                 </div>
 
                 <Footer />
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default Profile;
