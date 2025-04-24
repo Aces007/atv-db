@@ -9,8 +9,8 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient"; 
 import { Lock, FileText, Share2 } from "lucide-react"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons"; // Filled star
-import { faStar as regularStar } from "@fortawesome/free-solid-svg-icons"; // Outline star
+import { faStar as solidStar } from "@fortawesome/free-regular-svg-icons"; 
+import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
 
 
 const SearchResults = () => {
@@ -19,7 +19,6 @@ const SearchResults = () => {
   const [inputValue, setInputValue] = useState("");
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarkedTitles, setBookmarkedTitles] = useState([]);
-
 
   // Filter states
   const [sortBy, setSortBy] = useState("date");
@@ -40,7 +39,6 @@ const SearchResults = () => {
     }
   };
 
-
   const handleBookmark = async (item) => {
     const {
       data: { user },
@@ -60,7 +58,8 @@ const SearchResults = () => {
           .from("Bookmarks")
           .delete()
           .eq("user_id", user.id)
-          .eq("title", item.title);
+          .eq("title", item.title)
+          
   
         if (error) throw error;
   
@@ -76,6 +75,8 @@ const SearchResults = () => {
             user_id: user.id,
             title: item.title,
             abstract: item.abstract || null,
+            authors: item.authors || null,
+            publicationDate: item.publicationDate || null,
           },
         ]);
   
@@ -93,7 +94,6 @@ const SearchResults = () => {
     }
   };
   
-
   const fetchMaterialsData = async (query) => {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
@@ -119,9 +119,17 @@ const SearchResults = () => {
       console.error("Unexpected error:", error);
       setLoading(false);
     }
-  };
-  
-  
+  };  
+
+  useEffect(() => {
+    if (inputValue.trim()) {
+      fetchMaterialsData(inputValue);
+    } else {
+      setResults([]);
+      setLoading(false);
+    }
+  }, [inputValue]);
+
   useEffect(() => {
     const fetchBookmarks = async () => {
       const {
@@ -143,16 +151,6 @@ const SearchResults = () => {
   
     fetchBookmarks();
   }, []);
-  
-  
-  useEffect(() => {
-    if (inputValue.trim()) {
-      fetchMaterialsData(inputValue);
-    } else {
-      setResults([]);
-      setLoading(false);
-    }
-  }, [inputValue]);
 
   const handleSubjectChange = (subject) => {
     setSelectedSubjects((prev) =>
@@ -367,66 +365,9 @@ const SearchResults = () => {
           ) : results.length > 0 ? (
             results.map((res, index) => (
               <div
-              key={index}
-              style={{
-                backgroundColor: "#fff",
-                padding: "15px",
-                borderRadius: "10px",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                position: "relative", // for icon placement
-              }}
-            >
-              <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "#333" }}>
-                {res.title}
-              </h4>
-              <p style={{ color: "#555", marginBottom: "10px", fontSize: "14px" }}>
-                {res.abstract}
-              </p>
-          
-              <Link href={res.link || "#"}>
-                <div
-                  style={{
-                    display: "inline-block",
-                    backgroundColor: "#FFE200",
-                    color: "black",
-                    padding: "10px 20px",
-                    borderRadius: "5px",
-                    textDecoration: "none",
-                    textAlign: "center",
-                    fontFamily: "Montserrat",
-                    fontWeight: "bold",
-                    fontSize: "10px",
-                    width: "100%",
-                    transition: "background-color 0.3s",
-                  }}
-                >
-                  Abstract
-                </div>
-              </Link>
-          
-              {/* Bookmark Icon */}
-              <button
-  onClick={() => handleBookmark(res)}
-  style={{
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-  }}
-  title="Bookmark"
->
-  <FontAwesomeIcon
-    icon={bookmarkedTitles.includes(res.title) ? solidStar : regularStar}
-    style={{ color: "#FFD700", fontSize: "20px" }}
-  />
-</button>
-
-            <div>
                 key={index}
                 className="bg-white flex items-start gap-6 border border-black rounded-md shadow-md"
-                style={{ width: "1000px", height: "200px" }}
+                style={{ width: "1000px", height: "200px",position: "relative" }}
               >
                 {/* Maroon Icon Sidebar */}
                 <div className="w-20 h-full flex flex-col items-center justify-around text-white"
@@ -490,24 +431,6 @@ const SearchResults = () => {
                   </h5>
                 </div>
 
-              <div>
-                style={{
-                  backgroundColor: "#fff",
-                  padding: "15px",
-                  borderRadius: "10px",
-                  boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                  transition: "transform 0.3s ease",
-                  cursor: "pointer",
-                }}
-              </div>
-                <h4 style={{ fontSize: "18px", fontWeight: "bold", color: "#333" }}>
-                  {res.title}
-                </h4>
-                <p style={{ color: "#555", marginBottom: "10px", fontSize: "14px" }}>
-                  {res.abstract}
-                </p>
-
-
                 <Link href={res.link || "#"}>
                   <div
                     className="flex items-center justify-center px-4 py-2 rounded transition duration-300 transform hover:scale-105 hover:shadow-lg"
@@ -526,6 +449,23 @@ const SearchResults = () => {
                     Abstract
                   </div>
                 </Link>
+                <button
+  onClick={() => handleBookmark(res)}
+  style={{
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+  }}
+  title="Bookmark"
+>
+  <FontAwesomeIcon
+    icon={bookmarkedTitles.includes(res.title) ? solidStar : regularStar}
+    style={{ color: "#FFD700", fontSize: "20px" }}
+  />
+</button>
               </div>
             ))
           ) : (
