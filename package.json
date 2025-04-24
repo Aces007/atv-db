@@ -19,6 +19,7 @@
     "@nextui-org/theme": "^2.4.3",
     "@supabase/supabase-js": "^2.47.8",
     "framer-motion": "^11.15.0",
+    "lucide-react": "^0.503.0",
     "next": "15.1.0",
     "pdf-parse": "^1.1.1",
     "react": "^19.0.0",
