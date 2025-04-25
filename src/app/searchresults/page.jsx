@@ -9,8 +9,8 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient"; 
 import { Lock, FileText, Share2 } from "lucide-react"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons"; // Filled star
-import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons"; // Outline star
+import { faStar as solidStar } from "@fortawesome/free-regular-svg-icons"; 
+import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
 
 
 const SearchResults = () => {
