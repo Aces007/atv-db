@@ -1,137 +1,88 @@
 // components/UserProfile.jsx
 
-"use client"; // Add this line for client component
+"use client";
 
 import React from 'react';
-import { Box, Typography, Avatar, Paper, Button } from '@mui/material';
+import './UserProfile.css'; // Optional: external CSS if needed
 
 const UserProfile = () => {
-  // Static user data
   const user = {
     fullname: "Juan G. Dela Cruz",
-    course: "BS Computer Enineering",
+    course: "BS Computer Engineering",
     email: "Juan.DelaCruz@gmail.com",
     mobile: "09123456789",
     story: "I am outgoing, dedicated, and open-minded. I get access to people and adjust to changes with ease. I believe that a person should work on developing their professional skills and learning new things all the time. Currently, I am looking for new career opportunities my current job position cannot provide.",
-    avatar: "https://via.placeholder.com/100" // Placeholder image
-  };
+    avatar: "\avatar.png"   };
 
   return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', // Center the Box
-        alignItems: 'flex-start', 
-        height: '100vh', // Full viewport height
-        backgroundColor: 'var(--background)', // Use your background color
-        padding: 'var(--pad-mar-lg)', 
-        gap: 4 // Spacing between columns
-      }}
-    >
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          padding: 'var(--pad-mar-lg)', 
-          textAlign: 'center', 
-          borderRadius: 'var(--br-general)', 
-          backgroundColor: 'var(--cc-user-basic-bg)', 
-          boxShadow: '0px 5px 10px 2px black',
-          flex: 1 // Allow this column to grow
-        }}
-      >
-        <Typography 
-          variant="h4" // Header style
-          sx={{ 
-            marginBottom: '20px', 
-            fontWeight: 'bold', 
-            color: '#ffe100d5'
-          }}
-        >
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      height: '100vh',
+      backgroundColor: 'var(--background)',
+      padding: 'var(--pad-mar-lg)',
+      gap: '2rem',
+      flexWrap: 'wrap'
+    }}>
+      <div style={{
+        padding: 'var(--pad-mar-lg)',
+        textAlign: 'center',
+        borderRadius: 'var(--br-general)',
+        backgroundColor: 'var(--cc-user-basic-bg)',
+        boxShadow: '0px 5px 10px 2px black',
+        flex: 1,
+        minWidth: '300px'
+      }}>
+        <h1 style={{
+          marginBottom: '20px',
+          fontWeight: 'bold',
+          color: '#ffe100d5'
+        }}>
           User Profile
-        </Typography>
-        <Avatar 
+        </h1>
+        <img 
           src={user.avatar} 
-          alt={user.fullname} 
-          sx={{ 
-            width: 100, 
-            height: 100, 
+          style={{
+            width: '100px',
+            height: '100px',
             borderRadius: '60px',
-            margin: '0 auto' // Center the Avatar
-          }} 
+            margin: '0 auto',
+            display: 'block'
+          }}
         />
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            marginTop: 'var(--pad-mar-sm)', 
-            fontFamily: 'var(--ff-mainTxt)', 
-            color: 'var(--cc-txt-color1)', 
-            fontWeight: 'bold' // Bold name
-          }}
-        >
+        <h2 style={{
+          marginTop: '1rem',
+          fontFamily: 'var(--ff-mainTxt)',
+          color: 'var(--cc-txt-color1)',
+          fontWeight: 'bold'
+        }}>
           {user.fullname}
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: 'var(--cc-txt-color1)', 
-            marginTop: 'var(--pad-mar-sm)' 
-          }}
-        >
-          {user.course}
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: 'var(--cc-txt-color1)', 
-            marginTop: 'var(--pad-mar-sm)' 
-          }}
-        >
-          {user.email}
-        </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            color: 'var(--cc-txt-color1)', 
-            marginTop: 'var(--pad-mar-sm)' 
-          }}
-        >
-          {user.mobile}
-        </Typography>
-        <Typography 
-          variant="body3" 
-          sx={{ 
-            color: 'var(--cc-txt-color1)', 
-            marginTop: 'var(--pad-mar-sm)', 
-            opacity: 0.8 
-          }}
-        >
-          About Me: {user.story}
-        </Typography>
-      </Paper>
+        </h2>
+        <p style={{ color: 'var(--cc-txt-color1)', marginTop: '0.5rem' }}>{user.course}</p>
+        <p style={{ color: 'var(--cc-txt-color1)', marginTop: '0.5rem' }}>{user.email}</p>
+        <p style={{ color: 'var(--cc-txt-color1)', marginTop: '0.5rem' }}>{user.mobile}</p>
+        <p style={{
+          color: 'var(--cc-txt-color1)',
+          marginTop: '0.5rem',
+          opacity: 0.8
+        }}>
+          <strong>About Me:</strong> {user.story}
+        </p>
+      </div>
 
-      {/* Articles Upload Section */}
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          flex: 1, // Allow this column to grow
-          padding: 'var(--pad-mar-lg)', 
-          borderRadius: 'var(--br-general)', 
-          backgroundColor: 'var(--cc-user-basic-bg)', 
-          boxShadow: '0px 5px 10px 2px black' 
-        }}
-      >
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            fontWeight: 'bold', 
-            marginBottom: '20px' 
-          }}
-        >
-          Articles
-        </Typography>
-        
-      </Paper>
-    </Box>
+      <div style={{
+        padding: 'var(--pad-mar-lg)',
+        borderRadius: 'var(--br-general)',
+        backgroundColor: 'var(--cc-user-basic-bg)',
+        boxShadow: '0px 5px 10px 2px black',
+        flex: 1,
+        minWidth: '300px'
+      }}>
+        <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>Articles</h2>
+        {/* You can add article upload features here */}
+      </div>
+    </div>
   );
 };
 
