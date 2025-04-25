@@ -1,42 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useWebsiteContext } from "../WebsiteContext";
-import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 
 const Bookmarks = () => {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
-  const { fetchUserBookmarks, user } = useWebsiteContext();
-  const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
   
-  
-  useEffect(() => {
-      if (!user || !user.id) {
-          console.warn("User not available yet.");
-          return;
-      }
-
-      const getBookmarks = async () => {
-          try {
-              const userBookmarks = await fetchUserBookmarks(user.id);
-              if (!userBookmarks || userBookmarks.length === 0) {
-                  setBookmarks([]);
-              } else {
-                  setBookmarks(userBookmarks);
-              }
-          } catch (error) {
-              console.error("Failed to fetch bookmarks:", error);
-          } finally {
-              setLoading(false);
-          }
-      };
-
-      getBookmarks();
-  }, [user]);
 
   useEffect(() => {
     const fetchUserAndBookmarks = async () => {
