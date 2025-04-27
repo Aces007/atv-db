@@ -431,24 +431,24 @@ const SearchResults = () => {
                   </h5>
                 </div>
 
-                <Link href={res.link || "#"}>
-                  <div
-                    className="flex items-center justify-center px-4 py-2 rounded transition duration-300 transform hover:scale-105 hover:shadow-lg"
-                    style={{
-                      backgroundColor: "#FFE200",
-                      color: "#000000",
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontWeight: "bold",
-                      fontSize: "15px",
-                      width: "100px",
-                      height: "30px",
-                      marginTop: "150px",
-                      marginRight: "20px",
-                    }}
-                  >
-                    Abstract
-                  </div>
-                </Link>
+                <Link href={`/article_journalpage?title=${encodeURIComponent(res.title)}`}>
+                <div
+                  className="flex items-center justify-center px-4 py-2 rounded transition duration-300 transform hover:scale-105 hover:shadow-lg"
+                  style={{
+                    backgroundColor: "#FFE200",
+                    color: "#000000",
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: "bold",
+                    fontSize: "15px",
+                    width: "100px",
+                    height: "30px",
+                    marginTop: "150px",
+                    marginRight: "20px",
+                  }}
+                >
+                  Abstract
+                </div>
+              </Link>
                 <button
   onClick={() => handleBookmark(res)}
   style={{
