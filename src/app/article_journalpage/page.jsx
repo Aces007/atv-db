@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import Image from "next/image";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileLines } from "@fortawesome/free-regular-svg-icons";
 import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
@@ -13,13 +13,9 @@ import { faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast"; // Make sure you have react-hot-toast installed
 
 export default function ArticleJournalPage() {
-  const supabase = createClientComponentClient({
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  });
-
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
 
@@ -32,6 +28,7 @@ export default function ArticleJournalPage() {
     if (title) {
       fetchArticle(title);
       fetchSimilarArticles();
+      checkIfBookmarked(title); // Check if article is already bookmarked
     }
   }, [title]);
 
@@ -62,17 +59,71 @@ export default function ArticleJournalPage() {
     if (data) setSimilarArticles(data);
   }
 
-  // Handle bookmark toggle
-  const toggleBookmark = async () => {
-    setIsBookmarked((prev) => !prev);
-    // Optionally, save the bookmark status to the database or local storage
-    // For example, using supabase:
-    if (!isBookmarked) {
-      // Save to bookmarks table or local storage (if needed)
-      // await supabase.from("Bookmarks").insert([{ articleId: article.id }]);
+  // Check if the article is bookmarked
+  async function checkIfBookmarked(articleTitle) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      setIsBookmarked(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("Bookmarks")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("title", articleTitle)
+      .single();
+
+    if (error || !data) {
+      setIsBookmarked(false);
     } else {
-      // Remove from bookmarks table or local storage (if needed)
-      // await supabase.from("Bookmarks").delete().match({ articleId: article.id });
+      setIsBookmarked(true);
+    }
+  }
+
+  // Handle bookmarking/unbookmarking
+  const handleBookmark = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error("Please sign in to save bookmarks.");
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        // Unbookmark: remove from Supabase
+        const { error } = await supabase
+          .from("Bookmarks")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("title", article.title);
+
+        if (error) throw error;
+
+        setIsBookmarked(false);
+        toast.success("Removed bookmark.");
+      } else {
+        // Bookmark: add to Supabase
+        const { error } = await supabase.from("Bookmarks").insert([
+          {
+            user_id: user.id,
+            title: article.title,
+            abstract: article.abstract || null,
+            authors: article.authors || null,
+            publicationDate: article.publicationDate || null,
+          },
+        ]);
+
+        if (error) throw error;
+
+        setIsBookmarked(true);
+        toast.success("Bookmarked successfully.");
+      }
+    } catch (err) {
+      console.error("Bookmarking error:", err.message);
+      toast.error("Failed to update bookmark.");
     }
   };
 
@@ -171,7 +222,7 @@ export default function ArticleJournalPage() {
                 <FontAwesomeIcon icon={faDownload} /> PDF
               </Link>
               <button 
-                onClick={toggleBookmark} 
+                onClick={handleBookmark} 
                 className="hover:underline flex items-center gap-2">
                 <FontAwesomeIcon icon={isBookmarked ? faBookmarkSolid : faBookmarkRegular} />
                 {isBookmarked ? "Bookmarked" : "Bookmark"}
