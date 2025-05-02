@@ -1,5 +1,18 @@
-// Other imports
-import { Suspense } from "react";
+"use client"
+
+import { useEffect, useState } from "react";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import Image from "next/image";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faFileLines as faFileLinesRegular, faBookmark as faBookmarkRegular, } from "@fortawesome/free-regular-svg-icons";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkSolid, } from "@fortawesome/free-solid-svg-icons";
+import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function Page() {
   return (
@@ -10,23 +23,7 @@ export default function Page() {
 };
 
 
-function ArticleJournalPage() {
-  "use client";
-
-  // Imports inside the client component.
-  const { useEffect, useState } = require("react");
-  const { useSearchParams } = require("next/navigation");
-  const toast = require("react-hot-toast").default;
-  const Header = require("../header/page").default;
-  const Footer = require("../footer/page").default;
-  const Image = require("next/image").default;
-  const Link = require("next/link").default;
-  const { supabase } = require("@/lib/supabaseClient");
-  const { FontAwesomeIcon } = require("@fortawesome/react-fontawesome");
-  const { faEnvelope, faDownload, faBookmark: faBookmarkSolid } = require("@fortawesome/free-solid-svg-icons");
-  const { faFileLines: faFileLinesRegular, faBookmark: faBookmarkRegular } = require("@fortawesome/free-regular-svg-icons");
-
-
+export default function ArticleJournalPage() {
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
 
