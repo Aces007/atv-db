@@ -14,16 +14,8 @@ import { faBookmark as faBookmarkSolid, } from "@fortawesome/free-solid-svg-icon
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function Page() {
-  return (
-    <Suspense fallback={<div className="p-8 text-xl">Loading article...</div>}>
-      <ArticleJournalPage />
-    </Suspense>
-  );
-};
 
-
-export default function ArticleJournalPage() {
+const ArticleJournalPage = () => {
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
 
@@ -345,3 +337,5 @@ export default function ArticleJournalPage() {
     </div>
   );
 }
+
+export default ArticleJournalPage;
