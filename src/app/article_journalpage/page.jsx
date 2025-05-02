@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 
+
 const ArticleJournalPage = () => {
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
@@ -337,5 +338,6 @@ const ArticleJournalPage = () => {
     </div>
   );
 }
+
 
 export default ArticleJournalPage;
