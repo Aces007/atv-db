@@ -1,13 +1,12 @@
 import { Suspense } from "react";
-import ArticleJournalPage from "../article_journalpage/page";
+import dynamic from "next/dynamic";
 
-const ArticleJournalPageDynamic = () => {
+const ArticleJournalPageClient = dynamic(() => import("./ArticleJournalPageClient"), { ssr: false });
+
+export default function Page() {
     return (
         <Suspense fallback={<div className="text-center p-8">Loading article...</div>}>
-            <ArticleJournalPage />
+            <ArticleJournalPageClient />
         </Suspense>
     )
 }
-
-
-export default ArticleJournalPageDynamic;
