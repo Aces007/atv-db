@@ -7,17 +7,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEnvelope,
-} from "@fortawesome/free-solid-svg-icons";
-import {
-  faFileLines as faFileLinesRegular,
-  faBookmark as faBookmarkRegular,
-} from "@fortawesome/free-regular-svg-icons";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faFileLines as faFileLinesRegular, faBookmark as faBookmarkRegular, } from "@fortawesome/free-regular-svg-icons";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
-import {
-  faBookmark as faBookmarkSolid,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkSolid, } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
