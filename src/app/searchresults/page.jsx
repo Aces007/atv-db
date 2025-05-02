@@ -602,7 +602,7 @@ const SearchResults = () => {
               </div>
 
               {/* Abstract Link */}
-              <Link href={`/article_journalpageDynamic?title=${encodeURIComponent(res.title)}`}>
+              <Link href={`/article_journalpage?title=${encodeURIComponent(res.title)}`}>
                 <div
                   className="flex items-center justify-center px-4 py-2 rounded transition duration-300 transform hover:scale-105 hover:shadow-lg"
                   style={{
