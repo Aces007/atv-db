@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import Image from "next/image";
@@ -14,7 +12,18 @@ import { faBookmark as faBookmarkSolid, } from "@fortawesome/free-solid-svg-icon
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function ArticleJournalPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="p-8 text-xl">Loading article...</div>}>
+      <ArticleJournalPage />
+    </Suspense>
+  );
+};
+
+
+function ArticleJournalPage() {
+  "use client";
+
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
 
