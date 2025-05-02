@@ -1,5 +1,5 @@
-import ArticleJournalPage from "@/components/ArticleJournalPage";
 import { Suspense } from "react";
+import ArticleJournalPage from "../article_journalpage/page";
 
 const ArticleJournalPageDynamic = () => {
     return (
