@@ -233,11 +233,17 @@ const ArticleJournalPage = () => {
                   : "Unknown Author"}
               </span>
               <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
-                <Link href={article.contactLink || "#"} 
-                  className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faEnvelope} className="text-white" />
-                  Contact Author
-                </Link>
+              <Link
+                href={`/authorcontact?author=${encodeURIComponent(
+                  Array.isArray(article.authors) && article.authors[0]?.email
+                    ? article.authors[0].email
+                    : "unknown@example.com"
+                )}&title=${encodeURIComponent(article.title)}`}
+                className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2"
+              >
+                <FontAwesomeIcon icon={faEnvelope} className="text-white" />
+                Contact Author
+              </Link>
               </button>
             </div>
 
