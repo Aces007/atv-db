@@ -137,7 +137,7 @@ const ArticleJournalPage = () => {
   }
 
   async function fetchSimilarArticles() {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("Materials")
       .select("id, title, authors, publicationDate")
       .limit(5);
@@ -203,6 +203,8 @@ const ArticleJournalPage = () => {
   };
 
   const handleContactAuthor = () => setShowContactDetails(true);
+
+  const handleAuthorClick = () => setShowContactDetails(true);
 
   if (loading) {
     return (
@@ -300,11 +302,16 @@ const ArticleJournalPage = () => {
             <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">{article.title}</h1>
             <div className="text-sm text-gray-500 mb-6">Accessed {article.accessCount ?? 0} times</div>
             <div className="flex items-center gap-4 mb-8">
-              <span className="text-sm font-bold text-gray-800">
+              <span
+                className="text-sm font-bold text-gray-800 cursor-pointer hover:underline"
+                onClick={handleAuthorClick}
+                title="Click to view author contact details"
+              >
                 {Array.isArray(article.authors)
                   ? article.authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")
                   : "Unknown Author"}
               </span>
+
               <button
                 onClick={handleContactAuthor}
                 className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2"
@@ -397,7 +404,6 @@ const ArticleJournalPage = () => {
           </section>
         </div>
       </main>
-
       <Footer />
     </div>
   );
