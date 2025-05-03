@@ -204,7 +204,7 @@ export default function ArticleJournalPage() {
                   : "Unknown Author"}
               </span>
               <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
-                <Link href={article.contactLink || "#"} 
+                <Link href={`/authorcontact?title=${encodeURIComponent(article.contactEmail)}&title=${encodeURIComponent(article.title)}`}
                   className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faEnvelope} className="text-white" />
                   Contact Author
