@@ -312,12 +312,12 @@ const ArticleJournalPage = () => {
                   : "Unknown Author"}
               </span>
 
-              <button
-                onClick={handleContactAuthor}
-                className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2"
-              >
-                <FontAwesomeIcon icon={faEnvelope} className="text-white" />
-                Contact Author
+              <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
+                <Link href={article.contactLink || "#"} 
+                  className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faEnvelope} className="text-white" />
+                  Contact Author
+                </Link>
               </button>
             </div>
 
