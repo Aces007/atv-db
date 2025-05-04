@@ -42,43 +42,70 @@ export default function ContactAuthor() {
     if (error) {
       toast.error("Failed to send message.");
       console.error(error);
-    } else {
-      toast.success("Request sent to author!");
-      setMessage("");
+      setSubmitting(false);
+      return;
     }
 
+    toast.success("✅ Message sent to author! Redirecting...", {
+      duration: 3000,
+    });
+
+    setMessage("");
     setSubmitting(false);
+
+    setTimeout(() => {
+      window.location.href = `/article_journalpage?title=${encodeURIComponent(
+        articleTitle
+      )}`;
+    }, 3000);
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-redhat bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-100 to-white font-redhat">
       <Header />
-      <main className="flex-1 p-8 flex justify-center items-center">
-        <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-2xl">
-          <h1 className="text-3xl font-bold mb-6">Contact Author</h1>
-          <p className="mb-4 text-gray-600">
-            You're contacting <strong>{authorEmail}</strong> regarding the article: <em>{articleTitle}</em>
+      <main className="flex-1 px-4 py-12 flex justify-center items-center">
+        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl px-8 py-10 sm:p-12 transition-all duration-300">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+            📩 Contact Author
+          </h1>
+          <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+            You are reaching out to{" "}
+            <span className="font-semibold text-red-700">{authorEmail}</span>{" "}
+            regarding the article:{" "}
+            <span className="italic text-gray-800">{articleTitle}</span>.
           </p>
 
-          <form onSubmit={handleSubmit}>
-            <label className="block mb-4">
-              <span className="text-gray-700 font-semibold">Your Message</span>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Your Message
+              </label>
               <textarea
+                id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 required
-                className="mt-2 w-full border border-gray-300 rounded-lg p-4 h-40"
-                placeholder="Explain your request clearly..."
+                className="mt-2 w-full border border-gray-300 focus:ring-red-600 focus:border-red-600 rounded-xl p-4 h-40 resize-none shadow-sm transition duration-200"
+                placeholder="Write your message to the author here..."
               ></textarea>
-            </label>
+            </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="bg-red-700 hover:bg-red-800 text-white px-6 py-3 rounded-lg text-sm font-semibold"
-            >
-              {submitting ? "Sending..." : "Send Request"}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={submitting}
+                className={`${
+                  submitting
+                    ? "bg-red-300 cursor-not-allowed"
+                    : "bg-red-700 hover:bg-red-800"
+                } text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200`}
+              >
+                {submitting ? "Sending..." : "Send Request"}
+              </button>
+            </div>
           </form>
         </div>
       </main>
@@ -86,4 +113,3 @@ export default function ContactAuthor() {
     </div>
   );
 }
-
