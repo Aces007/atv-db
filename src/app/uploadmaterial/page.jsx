@@ -143,32 +143,43 @@ const Upload = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const { year, month, day } = materialData.publicationDate;
     const monthIndex = months.indexOf(month) + 1;
-  
+
     const formattedPublicationDate =
       year && monthIndex && day
         ? `${year}-${String(monthIndex).padStart(2, "0")}-${String(day).padStart(2, "0")}`
         : null;
-  
-   
+
     const citationsArray = references.map((ref) => ref.citation);
     const urlsArray = references.map((ref) => ref.url);
-  
+
+    // Get current user ID from Supabase auth
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error("Error fetching user or user not logged in:", userError);
+      alert("You must be logged in to submit material.");
+      return;
+    }
+
     const finalData = {
       ...materialData,
       tags,
-      references: citationsArray, 
-      url: urlsArray,             
+      references: citationsArray,
+      url: urlsArray,
       publicationDate: formattedPublicationDate,
+      user_id: user.id, // Add user id here to link the article to uploader
     };
-  
+
     console.log("Submitting Data:", finalData);
-  
+
     await handleUploadMaterial(finalData);
   };
-  
 
   return (
     <div className="uploadMaterial_cont bg-[#fafaf9] min-h-screen">
@@ -241,13 +252,12 @@ const Upload = () => {
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
             <h2 className="submit_labels">Introduction</h2>
             <textarea
-              name="abstract"
+              name="introduction"
               value={materialData.introduction}
               onChange={handleInputChange}
               className="w-full h-32 mt-2 p-2 border rounded"
             />
           </div>
-
 
           {/* Tags */}
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
@@ -345,8 +355,7 @@ const Upload = () => {
             </h3>
           </div>
 
-
-         {/* References */}
+          {/* References */}
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
             <h2 className="submit_labels">References</h2>
             {references.map((ref, index) => (
@@ -366,9 +375,9 @@ const Upload = () => {
                   className="material_inputs"
                 />
               </div>
-                ))}
-                <button type="button" onClick={addReference} className="add_author mt-4">+ Add Reference</button>
-              </div>
+            ))}
+            <button type="button" onClick={addReference} className="add_author mt-4">+ Add Reference</button>
+          </div>
 
           {/* Uploader Info */}
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
@@ -406,3 +415,4 @@ const Upload = () => {
 };
 
 export default Upload;
+
