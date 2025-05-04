@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import Header from "../header/page";
@@ -24,6 +24,8 @@ const ArticleJournalPage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showContributorProfile, setShowContributorProfile] = useState(false);
   const [contributor, setContributor] = useState({
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  const [authorDetails, setAuthorDetails] = useState({
     fullname: "",
     course: "",
     email: "",
@@ -106,6 +108,7 @@ const ArticleJournalPage = () => {
       return;
     }
 
+    // Increment access count
     const updatedCount = (article.accessCount || 0) + 1;
 
     await supabase
@@ -120,6 +123,44 @@ const ArticleJournalPage = () => {
       .single();
 
     setArticle(updatedArticle);
+
+    // Fetch author details from "Users" table if user_id exists
+    if (updatedArticle.user_id) {
+      const { data: user, error: userError } = await supabase
+        .from("Users")
+        .select("name, course, email, mobile_number")
+        .eq("id", updatedArticle.user_id)
+        .single();
+
+      if (userError) {
+        console.error("Error fetching author details:", userError);
+      } else if (user) {
+        setAuthorDetails({
+          fullname: user.name || "",
+          course: user.course || "",
+          email: user.email || "",
+          mobile: user.mobile_number || "",
+          avatar: "/avatar.png",
+        });
+      } else {
+        setAuthorDetails({
+          fullname: "",
+          course: "",
+          email: "",
+          mobile: "",
+          avatar: "/avatar.png",
+        });
+      }
+    } else {
+      setAuthorDetails({
+        fullname: "",
+        course: "",
+        email: "",
+        mobile: "",
+        avatar: "/avatar.png",
+      });
+    }
+
     setLoading(false);
 
     // Fetch contributor profile by user_id UUID from article record
@@ -138,7 +179,7 @@ const ArticleJournalPage = () => {
   }
 
   async function fetchSimilarArticles() {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("Materials")
       .select("id, title, authors, publicationDate")
       .limit(5);
@@ -203,8 +244,16 @@ const ArticleJournalPage = () => {
     }
   };
 
+  const handleContactAuthor = () => setShowContactDetails(true);
+
+  const handleAuthorClick = () => setShowContactDetails(true);
+
   if (loading) {
-    return <div className="flex justify-center items-center h-screen text-xl font-Red_Hat_Display">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen text-xl font-Red_Hat_Display">
+        Loading...
+      </div>
+    );
   }
 
   if (!article) {
@@ -225,10 +274,8 @@ const ArticleJournalPage = () => {
   return (
     <div className="flex flex-col min-h-screen font-Red_Hat_Display bg-gray-50">
       <Header />
-
       <main className="flex-1 p-8">
         <div className="flex flex-col lg:flex-row gap-10">
-
           {/* Sidebar */}
           <aside className="lg:w-1/4">
             {showContributorProfile ? (
@@ -298,15 +345,19 @@ const ArticleJournalPage = () => {
           {/* Main Content */}
           <section className="flex-1">
             <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">{article.title}</h1>
-
+            
             <div className="text-sm text-gray-500 mb-6">Accessed {article.accessCount ?? 0} times</div>
-
             <div className="flex items-center gap-4 mb-8">
-              <span className="text-sm font-bold text-gray-800">
+              <span
+                className="text-sm font-bold text-gray-800 cursor-pointer hover:underline"
+                onClick={handleAuthorClick}
+                title="Click to view author contact details"
+              >
                 {Array.isArray(article.authors)
                   ? article.authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")
                   : "Unknown Author"}
               </span>
+
               <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
                 <Link
                   href={`/authorcontact?author=${encodeURIComponent(
@@ -342,7 +393,7 @@ const ArticleJournalPage = () => {
               </button>
             </div>
 
-            <div>
+            <div className="mt-10">
               <h2 className="text-2xl font-bold mb-2">Abstract</h2>
               <div className="h-1 w-600 bg-gray-300 mb-4"></div>
               <p className="text-gray-700 leading-relaxed text-base whitespace-pre-wrap text-justify">
@@ -361,7 +412,6 @@ const ArticleJournalPage = () => {
             <div className="mt-10">
               <h2 className="text-2xl font-bold mb-2">References</h2>
               <div className="h-1 w-600 bg-gray-300 mb-4"></div>
-
               {article.references && article.url ? (() => {
                 const references = JSON.parse(article.references);
                 const urls = JSON.parse(article.url);
@@ -414,7 +464,6 @@ const ArticleJournalPage = () => {
           </section>
         </div>
       </main>
-
       <Footer />
     </div>
   );
