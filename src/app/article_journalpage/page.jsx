@@ -23,9 +23,15 @@ const ArticleJournalPage = () => {
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showContributorProfile, setShowContributorProfile] = useState(false);
-  const [contributor, setContributor] = useState({
   const [showContactDetails, setShowContactDetails] = useState(false);
   const [authorDetails, setAuthorDetails] = useState({
+    fullname: "",
+    course: "",
+    email: "",
+    mobile: "",
+    avatar: "/avatar.png",
+  });
+  const [contributor, setContributor] = useState({
     fullname: "",
     course: "",
     email: "",
