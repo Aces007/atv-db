@@ -241,7 +241,7 @@ const Upload = () => {
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
             <h2 className="submit_labels">Introduction</h2>
             <textarea
-              name="abstract"
+              name="introduction"
               value={materialData.introduction}
               onChange={handleInputChange}
               className="w-full h-32 mt-2 p-2 border rounded"

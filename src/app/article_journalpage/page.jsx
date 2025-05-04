@@ -253,7 +253,7 @@ const ArticleJournalPage = () => {
               </button>
             </div>
 
-            <div>
+            <div className="mt-10">
               <h2 className="text-2xl font-bold mb-2">Abstract</h2>
               <div className="h-1 w-600 bg-gray-300 mb-4"></div>
               <p className="text-gray-700 leading-relaxed text-base whitespace-pre-wrap text-justify">
@@ -268,7 +268,6 @@ const ArticleJournalPage = () => {
                 {article.introduction || "No introduction available."}
               </p>
             </div>
-
 
             <div className="mt-10">
               <h2 className="text-2xl font-bold mb-2">References</h2>
