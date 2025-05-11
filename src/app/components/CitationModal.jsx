@@ -2,25 +2,29 @@ import React, { useState, useEffect, useRef } from "react";
 
 const formatCitation = (data, style) => {
     const { authors, title, publicationDate, pageCount, doi } = data;
-    const citationDOI = doi || "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1936-4490.2001.tb00260.x";
+    //const citationDOI = doi || "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1936-4490.2001.tb00260.x";
     const authorText = authors.map((a) => `${a.lastName}, ${a.firstName.charAt(0)}.`).join(", ");
     const fullAuthorTextMLA = authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ");
     const year = publicationDate ? new Date(publicationDate).getFullYear() : "n.d.";
     const journal = "Polytechnic University of the Philippines";
-    const volume = "18";
-    const issue = "4";
+    const volume = "";
+    const issue = "";
     const pages = `${pageCount}`;
 
     switch (style) {
         case "APA":
-            return `${authorText} (${year}). ${title}. ${journal}, ${volume}(${issue}), ${pages}`;
+          return `${authorText} (${year}). ${title}. ${journal}${volume ? `, ${volume}` : ""}${issue ? `(${issue})` : ""}, ${pages}`;
         case "MLA":
-            return `${fullAuthorTextMLA}. “${title}.” ${journal}, vol. ${volume}, no. ${issue}, ${year}, pp. ${pages}`;
+          return `${fullAuthorTextMLA}. “${title}.” ${journal}${
+            volume ? `, vol. ${volume}` : ""
+          }${issue ? `, no. ${issue}` : ""}, ${year}, pp. ${pages}`;
         case "Chicago":
-            return `${fullAuthorTextMLA}. "${title}." ${journal} ${volume}, no. ${issue} (${year}): ${pages}`;
+          return `${fullAuthorTextMLA}. "${title}." ${journal}${
+            volume ? ` ${volume}` : ""
+          }${issue ? `, no. ${issue}` : ""} (${year}): ${pages}`;
         default:
-            return "";
-    }
+          return "";
+      }      
 };
 
 const CitationModal = ({ isOpen, onClose, materialData }) => {
@@ -52,6 +56,12 @@ const CitationModal = ({ isOpen, onClose, materialData }) => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen]);
+
+    
+    useEffect(() => {
+        setCopied(false);
+      }, [citationStyle]);
+      
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(citation);
