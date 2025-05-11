@@ -14,10 +14,8 @@ import { useWebsiteContext } from "../WebsiteContext";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { useState } from "react";
-import CitationModal from "../components/CitationModal"; //Citation
 
 const Upload = () => {
-  const [isCitationModalOpen, setIsCitationModalOpen] = useState(false); // Citation
   const { handleUploadMaterial } = useWebsiteContext();
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
@@ -392,21 +390,8 @@ const Upload = () => {
           {/* Buttons */}
           <div className="flex flex-col gap-4">
             <button type="submit" className="submit_material_btn">Submit Material</button>
-            <button
-              type="button"
-              onClick={() => setIsCitationModalOpen(true)}
-              className="bg-[#7b0f17] text-white font-semibold py-2 px-4 rounded shadow hover:bg-[#7b0f17]"
-            >
-              Generate Citations
-            </button>
           </div>
         </form>
-
-        <CitationModal
-          isOpen={isCitationModalOpen}
-          onClose={() => setIsCitationModalOpen(false)}
-          materialData={materialData}
-        />
       </div>
 
       <Footer />
