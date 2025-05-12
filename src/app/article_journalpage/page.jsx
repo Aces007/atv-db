@@ -13,8 +13,11 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
+import CitationModal from "../components/CitationModal"; //Citation
 
 const ArticleJournalPage = () => {
+  const [materialData, setMaterialData] = useState(null); // Citation
+  const [isCitationModalOpen, setIsCitationModalOpen] = useState(false); // Citation
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
 
@@ -387,9 +390,22 @@ const ArticleJournalPage = () => {
             </div>
 
             <div className="flex items-center gap-8 mb-10 text-gray-600 text-sm font-medium">
-              <Link href={article.citationsLink || "#"} className="hover:underline flex items-center gap-2">
-                <FontAwesomeIcon icon={faFileLinesRegular} /> Citation
-              </Link>
+            <button // Citation
+              type="button"
+              onClick={() => {
+                setMaterialData(article); 
+                setIsCitationModalOpen(true);
+              }}
+              className="hover:underline flex items-center gap-2 text-blue-600">
+              <FontAwesomeIcon icon={faFileLinesRegular} /> Citation
+            </button>
+
+            <CitationModal // Citation
+              isOpen={isCitationModalOpen}
+              onClose={() => setIsCitationModalOpen(false)}
+              materialData={materialData}
+            /> 
+
               <Link href={article.pdfLink || "#"} className="hover:underline flex items-center gap-2">
                 <FontAwesomeIcon icon={faDownload} /> PDF
               </Link>
