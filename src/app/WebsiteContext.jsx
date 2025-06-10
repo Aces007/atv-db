@@ -59,11 +59,13 @@ export const WebProvider = ({ children }) => {
             if (error) throw error;
 
             setUser(data.user);
-            console.log(data.user);
+            console.log("User logged in:", data.user);
+
+            // ✅ Immediately fetch updated user info
+            await fetchUserInfo(data.user.id);
+
             alert('Login Process Successful');
-            
-            
-            router.push('./homepage/')
+            router.push('./homepage/');
         } catch (error) {
             console.error('Error during login:', error.message);
             alert(error.message);
@@ -71,19 +73,23 @@ export const WebProvider = ({ children }) => {
             setLoading(false);
         }
     };
+
     
     const handleLogout = async() => {
         setLoading(true);
 
         try {
             const { error } = await supabase.auth.signOut();
-
             if (error) throw error;
 
             setUser(null);
-            alert('Account Logged Out Successfully')
+            setUserInfo(null);
 
-            router.push('./loginpage/')
+            console.log("User logged out, state cleared");
+
+            alert('Account Logged Out Successfully');
+
+            router.replace("/loginpage"); // ✅ Forces re-render without full refresh
         } catch (error) {
             console.error('Error during logout:', error.message);
             alert(error.message);
@@ -91,6 +97,7 @@ export const WebProvider = ({ children }) => {
             setLoading(false);
         }
     };
+
 
     const updateUserInfo = async (userId, updatedData) => {
         if (!userId) {
@@ -128,7 +135,7 @@ export const WebProvider = ({ children }) => {
 
             if (error) throw error;
 
-            console.log("Material uploaded successfully!", data);
+            console.log("Material uploaded successfully! Please wait for approval for it be displayed.", data);
             alert("Material uploaded successfully!");
         } catch (error)  {
             console.error("Error uploading material:", error.message);
@@ -148,7 +155,7 @@ export const WebProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('Users') 
-                .select('name, email, birthdate, age, course, student_number')
+                .select('name, email, birthdate, age, course, student_number, is_admin')
                 .eq("id", userId)
                 .single();
     

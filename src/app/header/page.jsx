@@ -3,13 +3,13 @@
 import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
 import Image from "next/image";
 import Link from "next/link";
-import { useWebsiteContext } from "../WebsiteContext";
+import { useWebsiteContext } from "@/app/WebsiteContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faUpload } from "@fortawesome/free-solid-svg-icons";
+import AdminButton from "@/app/components/AdminButton";
 
 const Header = () => {
-    const { user, handleLogout } = useWebsiteContext();
-
+    const { user, userInfo, handleLogout } = useWebsiteContext();
     return (
         <div className="header px-max py-lg flex flex-row items-center justify-between">
             <div className="header_left">
@@ -25,9 +25,10 @@ const Header = () => {
             </div>
 
             <div className="header_right flex flex-row items-center gap-max">
+                <AdminButton userInfo={userInfo} />
                 <a href={'./aboutpage/'} className="about_btns font-Montserrat font-bold uppercase">About ATV</a>
                 
-                
+        
                 {user ? (
                     <Dropdown className="flex flex-col items-center justify-center">
                         <DropdownTrigger>
