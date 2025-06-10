@@ -43,7 +43,7 @@ const SearchResults = () => {
     const trimmedQuery = query.trim();
     setLoading(true);
     try {
-      let supaQuery = supabase.from("Materials").select("*");
+      let supaQuery = supabase.from("Materials").select("*").eq("is_approved", true);
 
       if (selectedSubjects.length > 0) {
         const subjectFilters = selectedSubjects.map(

@@ -714,3 +714,9 @@ body {
   background-color: var(--cc-sub-hover);
 }
 /*#endregion Upload */
+
+.bg-maroon { background-color: #800000; }
+.bg-gold { background-color: #FFD700; }
+.shadow-lg { box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); }
+.rounded-lg { border-radius: 8px; }
+.transition { transition: all 0.3s ease-in-out; }
