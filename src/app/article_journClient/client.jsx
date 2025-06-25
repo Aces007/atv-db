@@ -20,6 +20,7 @@ const ArticleJournalPageClient = () => {
   const [isCitationModalOpen, setIsCitationModalOpen] = useState(false); // Citation
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
+  
 
   const [article, setArticle] = useState(null);
   const [similarArticles, setSimilarArticles] = useState([]);
