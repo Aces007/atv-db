@@ -3,9 +3,11 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-const ArticleJournalPageClient = dynamic(() => import("../article_journClient/client"), {
+
+const ArticleJournalPageClient = dynamic(() => import("../article_journalClient/client"), {
   ssr: false, // Important: disables server-side rendering so useSearchParams can be used safely
 });
+
 
 export default function ArticleJournalPage() {
   return (
