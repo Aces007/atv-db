@@ -21,7 +21,6 @@ const ArticleJournalPageClient = () => {
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
   
-
   const [article, setArticle] = useState(null);
   const [similarArticles, setSimilarArticles] = useState([]);
   const [loading, setLoading] = useState(true);
