@@ -1,6 +1,9 @@
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import ArticleJournalPageClient from "../article_journClient/client";
 
+const ArticleJournalPageClient = dynamic(() => import("./client"), {
+  ssr: false, // Important: disables server-side rendering so useSearchParams can be used safely
+});
 
 export default function ArticleJournalPageWrapper() {
   return (
