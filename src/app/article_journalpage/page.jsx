@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-const ArticleJournalPageClient = dynamic(() => import("./client"), {
+const ArticleJournalPageClient = dynamic(() => import("../article_journClient/client"), {
   ssr: false, // Important: disables server-side rendering so useSearchParams can be used safely
 });
 
