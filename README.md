@@ -15,8 +15,3 @@
     npm install
 ```
 > This is to install all the dependencies in the project found inside the package.json file.
-
-**3.When making commits in the repository use**
-```
-    git checkout -b date-name
-```
