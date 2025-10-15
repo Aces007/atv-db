@@ -11,15 +11,22 @@ import { Lock, FileText, Share2 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar as solidStar } from "@fortawesome/free-regular-svg-icons"; 
 import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
+import { useSearchParams } from 'next/navigation';
 
 
 const SearchResults = () => {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("query") || "";
+  const initialField = searchParams.get("field") || "all";
+
+  // Main States
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(initialQuery);
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarkedTitles, setBookmarkedTitles] = useState([]);
-  const [searchField, setSearchField] = useState("all"); // Default search field
+  const [searchField, setSearchField] = useState(initialField); // Default search field
+  
 
   // Filter states
   const [sortBy, setSortBy] = useState("date");
@@ -28,6 +35,20 @@ const SearchResults = () => {
   const [selectedSubjects, setSelectedSubjects] = useState([]);
 
   const subjects = ["Accounting", "Agriculture", "Biology", "Chemistry", "Engineering", "Esports", "Health Science", "History", "Literature", "Social Science", "Sports", "Technology", "Wellness and Lifestyle"];
+
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      fetchMaterialsData(initialQuery);
+    } else {
+      fetchMaterialsData("");
+    }
+  }, [initialQuery, initialField])
+
+  useEffect(() => {
+    if (inputValue.trim() && !loading) { 
+      fetchMaterialsData(inputValue);
+    }
+  }, [inputValue, selectedSubjects, sortBy]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -229,7 +250,9 @@ const SearchResults = () => {
   return (
     <div className="search_cont">
       <div className="search_content">
-        <Header />
+        <div className="relative z-50">
+          <Header />
+        </div>
 
         <div className="banner_cont">
           <img
