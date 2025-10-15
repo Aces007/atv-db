@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
 import { useWebsiteContext } from "../WebsiteContext";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 const PersonalInfo = () => {
     const { fetchUserInfo, user, updateUserInfo } = useWebsiteContext();
@@ -50,9 +51,10 @@ const PersonalInfo = () => {
                 nickname: userData.nickname || "",
                 gender: userData.gender || "",
                 studentNumber: userData.userStudentNumber || "",
-                personalEmail: userData.personal_email || "",
-                mobileNumber: userData.mobile_number || "",
-                course: userData.userCourse || ""
+                personalEmail: userData.userPersonalEmail || "",
+                mobileNumber: userData.userMobileNumber || "",
+                course: userData.userCourse || "",
+                profileUrl: userData.profile_url || ""
             });
         };
 
@@ -67,16 +69,30 @@ const PersonalInfo = () => {
 
         try {
             await updateUserInfo(user.id, personalInfo);
+            
+            // Refresh local state with updated info
             const refreshedData = await fetchUserInfo(user.id);
 
             if (refreshedData) {
                 setPersonalInfo({
-                    nickname: refreshedData.nickname,
-                    gender: refreshedData.gender,
-                    studentNumber: refreshedData.userStudentNumber,
-                    personalEmail: refreshedData.personal_email,
-                    mobileNumber: refreshedData.mobile_number,
-                    course: refreshedData.userCourse
+                nickname: refreshedData.nickname || "",
+                gender: refreshedData.gender || "",
+                studentNumber: refreshedData.userStudentNumber || "",
+                personalEmail: refreshedData.userPersonalEmail || "",
+                mobileNumber: refreshedData.userMobileNumber || "",
+                course: refreshedData.userCourse || "",
+                profileUrl: userData.profile_url || ""
+            });
+            alert("Information updated successfully!");
+
+            } else {
+                setPersonalInfo({
+                    nickname: "",
+                    gender: "",
+                    studentNumber: "",
+                    personalEmail: "",
+                    mobileNumber: "",
+                    course: ""
                 });
             }
         } catch (error) {
@@ -92,18 +108,81 @@ const PersonalInfo = () => {
         }));
     };
 
+    const handleUploadProfile = async (e) => {
+        try {
+            const file = e.target.files[0];
+            if (!file || !user?.id) {
+                alert("Please select a file and ensure you're logged in");
+                return;
+            }
+
+            // Validate file type
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const validTypes = ['jpg', 'jpeg', 'png', 'gif'];
+            if (!validTypes.includes(fileExt)) {
+                alert("Please upload an image file (jpg, jpeg, png, gif)");
+                return;
+            }
+
+            const fileName = `${user.id}.${fileExt}`;
+            const filePath = `${user.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("profile_pictures")
+                .upload(filePath, file, { 
+                    upsert: true,
+                    cacheControl: '3600'
+                });
+
+            if (uploadError) {
+                console.error("Upload error:", uploadError);
+                alert(`Upload failed: ${uploadError.message}`);
+                return;
+            }
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from("profile_pictures")
+                .getPublicUrl(filePath);
+
+            // Update user profile
+            const { error: updateError } = await supabase
+                .from("Users")
+                .update({ profile_url: publicUrl })
+                .eq("id", user.id)
+
+            if (updateError) {
+                console.error("Profile update error:", updateError);
+                alert(`Failed to update profile: ${updateError.message}`);
+                return;
+            }
+
+            setPersonalInfo(prev => ({ ...prev, profileUrl: publicUrl }));
+            alert("Profile picture updated successfully!");
+
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            alert("An unexpected error occurred. Please try again.");
+        }
+
+        console.log('Storage URL:', supabase.storage.url);
+    };
     return (
         <div className="info_cont">
             <div className="info_content">
                 <div className="preview_content">
                     <div className="profPic_cont">
-                        <Image src="/images/materials/placeholderImg.png" alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
-                        <button className="uploadBtn font-Montserrat text-min">Change Photo</button>
+                        <Image src={personalInfo.profileUrl ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
+
+                        <input type="file" accept="image/*" id="profileUpload" style={{ display: "none" }} onChange={handleUploadProfile}/>
+                        <button className="uploadBtn font-Montserrat text-min" onClick={() => document.getElementById("profileUpload").click()}>Change Photo</button>
                     </div>
 
                     <div className="profInfo_cont">
-                        <h2 className="profInfo_content"><span className="profInfo_label">Age:</span> {age}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Nickname:</span> {personalInfo.nickname}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Gender:</span> {personalInfo.gender}</h2>
                         <h2 className="profInfo_content"><span className="profInfo_label">Course:</span> {personalInfo.course}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Personal Email:</span> {personalInfo.personalEmail}</h2>
                         <h2 className="profInfo_content"><span className="profInfo_label">PUP Email:</span> {email}</h2>
                     </div>
                 </div>

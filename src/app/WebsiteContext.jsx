@@ -104,19 +104,26 @@ export const WebProvider = ({ children }) => {
             console.error("User ID is missing.");
             return;
         }
-    
+
+        const payload = {
+            nickname: updatedData.nickname,
+            gender: updatedData.gender,
+            student_number: updatedData.studentNumber,
+            personal_email: updatedData.personalEmail,
+            mobile_number: updatedData.mobileNumber,
+            course: updatedData.course,
+        }
+
         try {
             const { error } = await supabase
                 .from('Users') 
-                .update(updatedData)
+                .update(payload)
                 .eq("id", userId);
     
             if (error) throw error;
     
             console.log("User information updated successfully!");
             alert("Profile updated successfully!");
-    
-
             fetchUserInfo(userId);
         } catch (error) {
             console.error("Error updating user info:", error.message);
@@ -155,7 +162,7 @@ export const WebProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('Users') 
-                .select('name, email, birthdate, age, course, student_number, is_admin')
+                .select('name, email, gender, nickname, birthdate, age, course, student_number, personal_email, mobile_number, is_admin')
                 .eq("id", userId)
                 .single();
     
@@ -166,11 +173,15 @@ export const WebProvider = ({ children }) => {
             setUserInfo(data);
             return {
                 full_name: data.name,
+                nickname: data.nickname,
+                gender: data.gender,
                 userEmail: data.email,
                 userBirthdate: data.birthdate,
                 userAge: data.age,
                 userCourse: data.course,
+                userMobileNumber: data.mobile_number,
                 userStudentNumber: data.student_number,
+                userPersonalEmail: data.personal_email,
             };
         } catch (error) {
             console.error("Error fetching user info:", error.message);

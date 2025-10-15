@@ -8,6 +8,11 @@ const nextConfig = {
             bodySizeLimit: "10mb",
         }
     },
+    images: {
+        domains: [
+            process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '') || 'ehwzmnpmtukqybibgwuk.supabase.co'
+        ],
+    },
 };
 
 export default nextConfig;

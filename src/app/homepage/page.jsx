@@ -44,10 +44,7 @@ const Home = () => {
     }
     // pass both query and field so SearchResults can pick them up
     router.push(
-      `/searchresults?query=${encodeURIComponent(q)}&field=${encodeURIComponent(
-        searchField
-      )}`
-    );
+      `/searchresults?query=${encodeURIComponent(inputValue)}&field=${encodeURIComponent(searchField)}`);
   };
 
   return (
