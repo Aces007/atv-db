@@ -41,7 +41,7 @@ const Home = () => {
   const handleSearch = async() => {
     const {data: {user}} = await supabase.auth.getUser();
     if (!user) {
-      setValidityMessage("Please log in to perform a search. Provide a valid PUP Account.");
+      setValidityMessage("Please log in to perform a search. Provide a valid PUP Account");
       return;
     }
 
