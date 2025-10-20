@@ -293,7 +293,7 @@ const ArticleJournalPageClient = () => {
                   <h2 className="text-2xl font-bold">{contributor.fullname || "Unknown"}</h2>
                   <p className="text-sm font-semibold">{contributor.course || ""}</p>
                   <div className="flex flex-col gap-2 mt-4 w-full text-center text-white text-sm">
-                    <div>{contributor.email || ""}</div>
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '400px' }}>{contributor.email || ""}</div>
                     <div>{contributor.mobile || ""}</div>
                   </div>
                   <button
@@ -405,9 +405,37 @@ const ArticleJournalPageClient = () => {
               materialData={materialData}
             /> 
 
-              <Link href={article.pdfLink || "#"} className="hover:underline flex items-center gap-2">
-                <FontAwesomeIcon icon={faDownload} /> PDF
-              </Link>
+              <button
+                onClick={async () => {
+                  if (!article.pdf_path) {
+                    alert("No PDF available for this article.");
+                    return;
+                  }
+
+                  const { data, error } = await supabase
+                    .storage
+                    .from("pdfs") 
+                    .createSignedUrl(article.pdf_path, 60); 
+
+                  if (error) {
+                    console.error("Error generating download link:", error);
+                    alert("Failed to download file.");
+                    return;
+                  }
+
+                  // Trigger download
+                  const link = document.createElement("a");
+                  link.href = data.signedUrl;
+                  link.download = article.title + ".pdf";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="hover:underline flex items-center gap-2 text-blue-600"
+              >
+                <FontAwesomeIcon icon={faDownload} /> Download PDF
+              </button>
+
               <button onClick={handleBookmark} className="hover:underline flex items-center gap-2">
                 <FontAwesomeIcon icon={isBookmarked ? faBookmarkSolid : faBookmarkRegular} />
                 {isBookmarked ? "Bookmarked" : "Bookmark"}
