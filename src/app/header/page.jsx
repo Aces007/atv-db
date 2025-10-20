@@ -33,7 +33,7 @@ const Header = () => {
                     <Dropdown className="flex flex-col items-center justify-center">
                         <DropdownTrigger>
                             <button>
-                                <img src="./images/materials/placeholderImg.png" alt="Placeholder Image" className="profile_img border rounded-full border-sm" />
+                                <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={50} height={50} className="placeHolderImg" />
                             </button>
                         </DropdownTrigger>
                         <DropdownMenu className="profile_drop_cont">

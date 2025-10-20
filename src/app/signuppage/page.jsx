@@ -163,7 +163,9 @@ const SignUp = () => {
                 <div className="login_panel flex flex-col items-center w-full h-screen py-2">
                     <div className="login_content">
                         <div className="flex flex-col items-center gap-2">
-                            <Image src="/images/logo.png" alt="openULogo" width={140} height={140} />
+                            <Link href={'./homepage/'}>
+                                <Image src="/images/logo.png" alt="openULogo" width={140} height={140} />
+                            </Link>
                             <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
                         </div>
 
