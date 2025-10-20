@@ -6,7 +6,6 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe, faMobileScreen, faWifi, faCheck, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useWebsiteContext } from '../WebsiteContext';
-import { supabase } from '@/lib/supabaseClient';
 
 
 const Login = () => {
