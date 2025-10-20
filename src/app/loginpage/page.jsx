@@ -6,6 +6,7 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGlobe, faMobileScreen, faWifi, faCheck, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useWebsiteContext } from '../WebsiteContext';
+import { supabase } from '@/lib/supabaseClient';
 
 
 const Login = () => {
@@ -58,7 +59,9 @@ const Login = () => {
                 <div className="login_panel flex flex-col items-center w-full h-screen py-6">
                     <div className="login_content">
                         <div className="flex flex-col items-center gap-2">
-                            <Image src="/images/logo.png" alt="ATVLogo" width={140} height={140} />
+                            <Link href={'./homepage/'}>
+                                <Image src="/images/logo.png" alt="ATVLogo" width={140} height={140} />
+                            </Link>
                             <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
                         </div>
 

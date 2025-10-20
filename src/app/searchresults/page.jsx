@@ -25,7 +25,8 @@ const SearchResults = () => {
   const [inputValue, setInputValue] = useState(initialQuery);
   const [bookmarks, setBookmarks] = useState([]);
   const [bookmarkedTitles, setBookmarkedTitles] = useState([]);
-  const [searchField, setSearchField] = useState(initialField); // Default search field
+  const [searchField, setSearchField] = useState(initialField); 
+  const [article, setArticle] = useState(null);
   
 
   // Filter states
@@ -512,16 +513,41 @@ const SearchResults = () => {
           sortedResults.map((res, index) => (
             <div
               key={index}
-              className="bg-white flex items-start gap-6 border border-black rounded-md shadow-md"
-              style={{ width: "1000px", height: "240px", position: "relative" }}
+              className="article_container bg-white flex items-start gap-6 border border-black rounded-md shadow-md"
+              style={{ width: "100%", height: "240px", position: "relative" }}
             >
               {/* Maroon Icon Sidebar */}
               <div
                 className="w-20 h-full flex flex-col items-center justify-around text-white"
                 style={{ backgroundColor: "#4F0505" }}
               >
-                <Lock size={23} />
-                <FileText size={23} />
+                <button onClick={async () => {
+                    if (!res.pdf_path) {
+                      alert("No PDF available for this publication.");
+                      return;
+                    }
+  
+                    const { data, error } = await supabase
+                      .storage
+                      .from("pdfs") 
+                      .createSignedUrl(res.pdf_path, 60); 
+  
+                    if (error) {
+                      console.error("Error generating download link:", error);
+                      alert("Failed to download file.");
+                      return;
+                    }
+  
+                    // Trigger download
+                    const link = document.createElement("a");
+                    link.href = data.signedUrl;
+                    link.download = res.title + ".pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}>
+                  <FileText size={23} />
+                </button>
                 <Share2 size={23} />
               </div>
 

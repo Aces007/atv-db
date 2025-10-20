@@ -18,7 +18,7 @@ import { useWebsiteContext } from "../WebsiteContext";
 
 const Profile = () => {
     const [selectedSection, setSelectedSection] = useState('PersonalInfo');
-    const { fetchUserInfo, user } = useWebsiteContext();
+    const { fetchUserInfo, user, userInfo } = useWebsiteContext();
     const [name, setName] = useState(null);
     const [email, setEmail] = useState(null);
     const [birthdate, setBirthdate] = useState(null);
@@ -60,9 +60,9 @@ const Profile = () => {
                         <h1 className="font-Red_Hat_Display uppercase font-extrabold text-sm">Your Account</h1>
 
                         <div className="user_basic flex flex-row gap-4">
-                            <Image src="/images/materials/placeholderImg.png" alt="Placeholder Image" width={50} height={50} className="placeHolderImg" />
+                            <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} style={{ width: "60px", height: "60px", borderRadius: "60px" }} />
 
-                            <div className="user_basic_info">
+                            <div className="flex flex-col justify-center items-start gap-2">
                                 <h1 className="font-Red_Hat_Display font-bold text-min">{name}</h1>
                                 <h1 className="font-Red_Hat_Display text-min">{studentNumber}</h1>
                             </div>

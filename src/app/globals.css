@@ -467,6 +467,8 @@ body {
 }
 
 .placeHolderProfile {
+  width: 120px;
+  height: 130px;
   border-radius: 60px;
 }
 

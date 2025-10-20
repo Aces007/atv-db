@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "../header/page";
 import Footer from "../footer/page";
+import { supabase } from '@/lib/supabaseClient';
 
 const Home = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const Home = () => {
   // mirror exactly what SearchResults expects:
   const [inputValue, setInputValue] = useState("");
   const [searchField, setSearchField] = useState("all");
+  const [validityMessage, setValidityMessage] = useState("");
 
   const subjects = [
     "all",
@@ -36,7 +38,13 @@ const Home = () => {
   };
 
   // when user clicks the button (or on Enter) we redirect
-  const handleSearch = () => {
+  const handleSearch = async() => {
+    const {data: {user}} = await supabase.auth.getUser();
+    if (!user) {
+      setValidityMessage("Please log in to perform a search. Provide a valid PUP Account.");
+      return;
+    }
+
     const q = inputValue.trim();
     if (!q) {
       alert("Please input a search term.");
@@ -160,6 +168,9 @@ const Home = () => {
                   </button>
                 </div>
               </div>
+            {validityMessage && (
+              <p className="mt-2 text-red-600 text-min font-medium font-Montserrat">{validityMessage}</p>
+            )}
             </form>
 
             <div className="bottom_txt font-Red_Hat_Display text-white w-11/12 text-justify">

@@ -162,7 +162,7 @@ export const WebProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('Users') 
-                .select('name, email, gender, nickname, birthdate, age, course, student_number, personal_email, mobile_number, is_admin')
+                .select('name, email, gender, nickname, birthdate, age, course, student_number, personal_email, mobile_number, is_admin, profile_url')
                 .eq("id", userId)
                 .single();
     
@@ -182,6 +182,7 @@ export const WebProvider = ({ children }) => {
                 userMobileNumber: data.mobile_number,
                 userStudentNumber: data.student_number,
                 userPersonalEmail: data.personal_email,
+                profile_url: data.profile_url, 
             };
         } catch (error) {
             console.error("Error fetching user info:", error.message);

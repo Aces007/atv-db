@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 const PersonalInfo = () => {
-    const { fetchUserInfo, user, updateUserInfo } = useWebsiteContext();
+    const { fetchUserInfo, user, updateUserInfo, userInfo } = useWebsiteContext();
     const [name, setName] = useState(null);
     const [email, setEmail] = useState(null);
     const [birthdate, setBirthdate] = useState(null);
@@ -157,9 +157,12 @@ const PersonalInfo = () => {
                 return;
             }
 
-            setPersonalInfo(prev => ({ ...prev, profileUrl: publicUrl }));
-            alert("Profile picture updated successfully!");
+            await fetchUserInfo(user.id);
 
+            setPersonalInfo(prev => ({ ...prev, profileUrl: publicUrl }));
+
+
+            alert("Profile picture updated successfully!");
         } catch (error) {
             console.error("Unexpected error:", error);
             alert("An unexpected error occurred. Please try again.");
@@ -167,12 +170,13 @@ const PersonalInfo = () => {
 
         console.log('Storage URL:', supabase.storage.url);
     };
+
     return (
         <div className="info_cont">
             <div className="info_content">
                 <div className="preview_content">
                     <div className="profPic_cont">
-                        <Image src={personalInfo.profileUrl ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
+                        <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
 
                         <input type="file" accept="image/*" id="profileUpload" style={{ display: "none" }} onChange={handleUploadProfile}/>
                         <button className="uploadBtn font-Montserrat text-min" onClick={() => document.getElementById("profileUpload").click()}>Change Photo</button>
