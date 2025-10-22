@@ -1,0 +1,4498 @@
+// Website Context
+"use client"
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+
+const WebsiteContext = createContext();
+
+export const WebProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    const handleSignup = async (name, email, password, month, day, year, age) => {
+        setLoading(true);
+    
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+    
+            const user = data?.user;
+    
+            if (error) throw error;
+            if (!user) throw new Error('User not created');
+    
+
+            const birthdate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            console.log("Formatted Birthdate:", birthdate); // Debugging log
+
+
+            const { error: insertError } = await supabase
+                .from('Users')
+                .insert([{ id: user.id, name, email, birthdate, age, password }]);
+    
+            if (insertError) throw insertError;
+    
+            setUser(user);
+            alert('Signup Successful!');
+            router.push('./homepage/');
+        } catch (error) {
+            console.error('Error during signup:', error.message);
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleLogin = async(email, password) => {
+        setLoading(true);
+
+        try {
+            const { error, data } = await supabase.auth.signInWithPassword({
+                email, password,
+            });
+            if (error) throw error;
+
+            setUser(data.user);
+            console.log("User logged in:", data.user);
+
+            // ✅ Immediately fetch updated user info
+            await fetchUserInfo(data.user.id);
+
+            alert('Login Process Successful');
+            router.push('./homepage/');
+        } catch (error) {
+            console.error('Error during login:', error.message);
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    
+    const handleLogout = async() => {
+        setLoading(true);
+
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            setUser(null);
+            setUserInfo(null);
+
+            console.log("User logged out, state cleared");
+
+            alert('Account Logged Out Successfully');
+
+            router.replace("/loginpage"); // ✅ Forces re-render without full refresh
+        } catch (error) {
+            console.error('Error during logout:', error.message);
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const updateUserInfo = async (userId, updatedData) => {
+        if (!userId) {
+            console.error("User ID is missing.");
+            return;
+        }
+
+        const payload = {
+            nickname: updatedData.nickname,
+            gender: updatedData.gender,
+            student_number: updatedData.studentNumber,
+            personal_email: updatedData.personalEmail,
+            mobile_number: updatedData.mobileNumber,
+            course: updatedData.course,
+        }
+
+        try {
+            const { error } = await supabase
+                .from('Users') 
+                .update(payload)
+                .eq("id", userId);
+    
+            if (error) throw error;
+    
+            console.log("User information updated successfully!");
+            alert("Profile updated successfully!");
+            fetchUserInfo(userId);
+        } catch (error) {
+            console.error("Error updating user info:", error.message);
+            alert("Failed to update profile. Please try again.");
+        }
+    };
+    
+
+    const handleUploadMaterial = async (materialData) => {
+        setLoading(true);
+
+        try {
+            const {data, error} = await supabase
+                .from("Materials")
+                .insert([materialData]);
+
+            if (error) throw error;
+
+            console.log("Material uploaded successfully! Please wait for approval for it be displayed.", data);
+            alert("Material uploaded successfully!");
+        } catch (error)  {
+            console.error("Error uploading material:", error.message);
+            alert("Failed to upload material. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const fetchUserInfo = async (userId) => {
+        if (!userId) {
+            console.error("User ID is missing.");
+            return null;
+        }
+    
+        try {
+            const { data, error } = await supabase
+                .from('Users') 
+                .select('name, email, gender, nickname, birthdate, age, course, student_number, personal_email, mobile_number, is_admin, profile_url')
+                .eq("id", userId)
+                .single();
+    
+            if (error) throw error;
+    
+            console.log("Fetched User Data:", data);
+    
+            setUserInfo(data);
+            return {
+                full_name: data.name,
+                nickname: data.nickname,
+                gender: data.gender,
+                userEmail: data.email,
+                userBirthdate: data.birthdate,
+                userAge: data.age,
+                userCourse: data.course,
+                userMobileNumber: data.mobile_number,
+                userStudentNumber: data.student_number,
+                userPersonalEmail: data.personal_email,
+                profile_url: data.profile_url, 
+            };
+        } catch (error) {
+            console.error("Error fetching user info:", error.message);
+        }
+    };
+    
+
+    useEffect(() => {
+        const getUserSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log("Session Data:", session); // Debugging
+            if (session?.user) {
+                console.log("User ID:", session.user.id); // Debugging
+                setUser(session.user);
+                fetchUserInfo(session.user.id);
+            }
+        };
+        getUserSession();
+    }, []);
+    
+
+    return (
+        <WebsiteContext.Provider
+            value={{user, loading, userInfo, handleSignup, handleLogin, 
+                handleLogout, fetchUserInfo, updateUserInfo, handleUploadMaterial}}
+        >
+            {children}
+        </WebsiteContext.Provider>
+    )
+}
+
+export const useWebsiteContext = () => useContext(WebsiteContext);
+
+
+// globals.css
+/*#region Imports*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap'); /*Cinzel*/
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap'); /*Montserrat*/
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap'); /*Red Hat*/
+/*#endregion Imports*/
+
+
+/*#region prerequisites*/
+:root {
+  /*Color Design System*/
+  --background: #4f0505;
+  --foreground: #171717;
+
+  --cc-main-color: #800000;
+  --cc-main-color-hover: #800000d0;
+  --cc-sub-color: #FFE200;
+  --cc-sub-hover: #ffe100d5;
+  --cc-txt-color1: #000;
+  --cc-txt-color2: #fff;
+  --cc-OU-svg: #603d30;
+  --cc-signup-btn: #dccece;
+  --cc-signup-hover: #dcceced5;
+  --cc-profile-btn: #cccccc;
+  --cc-profile-hover: #989898;
+
+  --cc-box-shadow: #a9a9a9;
+  --cc-user-basic-bg: #f7f7f7;
+
+
+  /*Main Fonts Design System*/
+  --ff-logo_mainElements: 'Cinzel', serif;
+  --ff-buttons: 'Montserrat', serif;
+  --ff-mainTxt: 'Red Hat Display', serif;
+
+  /*Font Size Design System*/
+  --fs-logo: 25px;
+  --fs-subLogo: 18px;
+
+  /*Border Radius Design System*/
+  --br-general: 10px;
+  --br-signup-login: 5px;
+
+  /*Padding Design System*/
+  --pad-mar-min: 4px;
+  --pad-mar-sm: 8px;
+  --pad-mar-med: 13px;
+  --pad-mar-lg: 24px;
+  --pad-mar-xlg : 40px;
+  --pad-mar-max: 64px;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+/*#endregion prerequisites*/
+
+/*#region HomePage*/
+    /*#region Header*/
+    .header_left {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;  
+      gap: 1rem;
+      width: fit-content;
+    }
+
+    .logo_img {
+      width: 80px;
+      height: 80px;
+    }
+
+    .logo_h1, .logo_h2 {
+      font-family: var(--ff-logo_mainElements);
+    }
+
+    .logo_h1 {
+      cursor: pointer;
+      font-weight: 900;
+      font-size: var(--fs-logo);
+      letter-spacing: 10%;
+      color: var(--cc-main-color);
+    }
+
+    .logo_h2 {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: var(--fs-subLogo);
+      letter-spacing: 7%;
+      color: var(--cc-txt-color1);
+      opacity: 0.6;
+    }
+
+    .about_btns:hover {
+      color: var(--background);
+      text-decoration: underline;
+    }
+
+    .login_btn {
+      background-color: var(--cc-main-color);
+      border-radius: var(--br-general);
+      letter-spacing: 15%;
+      color: var(--cc-txt-color2);
+    }
+
+    .login_btn:hover{
+      background-color: var(--cc-sub-color);
+      color: var(--cc-txt-color1);
+    }
+
+    .profile_img {
+      width: 60px;
+      height: 60px;
+      border-color: var(--cc-profile-btn);
+    }
+
+    .profile_drop_cont {
+      background-color: var(--cc-profile-btn);
+      display: flex;
+      align-items: center;
+      text-align: center;
+      width: max-content;
+      border-radius: var(--br-general);
+    }
+
+    .profile_drop_btns {
+      width: 100%;
+      padding-inline: 20px;
+      padding-block: 10px;
+      border-radius: var(--br-signup-login);
+    }
+
+    .profile_drop_btns:hover {
+      background-color: var(--cc-profile-hover);
+      font-weight: bold;
+    }
+    /*#endregion Header*/
+
+    /*#region Body */
+    .body_left {
+      position: relative;
+      width: 50%;
+      overflow: hidden;
+    }
+
+    .pylon_img {
+      width: 590px;
+      height: 580px;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .right_txt {
+      letter-spacing: 5%;
+      width: 720px;
+    }
+
+    .drop_btn {
+      width: fit-content;
+      border-top-left-radius: var(--br-general);
+      border-bottom-left-radius: var(--br-general);
+      background-color: #D9D9D9;
+    }
+
+    .search_field_bar {
+      width: 450px;
+    }
+
+    .searchBtn {
+      position: relative;
+      background-color: var(--cc-sub-color);
+      padding: var(--pad-mar-med);
+      border-top-right-radius: var(--br-general);
+      border-bottom-right-radius: var(--br-general);
+      cursor: pointer;
+      transition: background-color 0.4s, transform 0.1s ease;
+    }
+
+    .searchBtn:hover {
+      background-color: var(--cc-sub-hover);
+    }
+
+    .searchBtn:active {
+      animation: pulse 0.3s ease-out;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(0.95);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+    /*#endregion Body */
+/*#endregion HomePage */
+
+
+/*#region LoginPage*/
+    .svgConfOpenU {
+      background-color: var(--cc-OU-svg);
+      border-radius: 60px;
+      padding: var(--pad-mar-sm);
+    }
+
+
+    .login_panel {
+      background-color: var(--background); 
+    }
+
+    .login_content {
+      position: relative;
+      z-index: 1; 
+    }
+
+    .obelisk_img {
+      position: fixed;
+      z-index: 0;
+      top: 0px;
+      opacity: 10%;
+      filter: blur(0.2rem);
+      width: 690px;
+      height: 650px;
+      object-fit: cover;
+      object-position: center;
+    }
+    
+    .user_forms_login {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+      margin-top: 60px;
+    }
+    .user_forms_signup {
+      width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    .form_fields {
+      box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .login_btn2 {
+      background-color: var(--cc-sub-color);
+      border-radius: var(--br-signup-login);
+      text-transform: uppercase;
+      letter-spacing: 15%;
+      color: var(--cc-txt-color1);
+      font-family: var(--ff-buttons);
+      font-weight: bold;
+      width: 185px;
+      padding-inline: var(--pad-mar-med);
+      padding-block: var(--pad-mar-med);
+      box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .login_btn2:hover{
+      background-color: var(--cc-sub-hover);
+      color: var(--cc-txt-color1);
+    }
+
+    .signup_btn {
+      background-color: var(--cc-signup-btn);
+      border-radius: var(--br-signup-login);
+      text-transform: uppercase;
+      letter-spacing: 15%;
+      color: var(--cc-txt-color1);
+      font-family: var(--ff-buttons);
+      font-weight: bold;
+      width: 185px;
+      padding-inline: var(--pad-mar-med);
+      padding-block: var(--pad-mar-med);
+      box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
+    }
+    
+    .signup_btn:hover{
+      background-color: var(--cc-signup-hover);
+      color: var(--cc-txt-color2);
+    }
+    
+    .forgot_pass:hover {
+      color: var(--cc-signup-btn);
+    }
+
+    .sis_btn {
+      background-color: var(--cc-main-color);
+      border-radius: var(--br-signup-login);
+      text-transform: uppercase;
+      letter-spacing: 15%;
+      color: var(--cc-txt-color2);
+      font-family: var(--ff-buttons);
+      font-weight: bold;
+      width: 185px;
+      padding-inline: var(--pad-mar-med);
+      padding-block: var(--pad-mar-med);
+      box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .sis_btn:hover {
+      background-color: var(--cc-main-color-hover);
+      color: var(--cc-txt-color1);
+    }
+
+    .date_dropdown {
+      font-family: var(--ff-buttons);
+      font-weight: 600;
+      width: 100%;
+      padding: var(--pad-mar-med);
+      border-radius: var(--br-signup-login);
+      box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
+
+    .date_dropdown:focus {
+      outline: none;
+      border-color: #0060df;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+/*#endregion LoginPage*/
+
+
+/*#region SearchResults*/
+.banner_content {
+  background-color: var(--background);
+  padding-block: var(--pad-mar-max);
+}
+
+.mural_img {
+  position: absolute;
+  z-index: 0;
+  top: -220px;
+  right: 0px;
+  opacity: 10%;
+  filter: blur(0.3rem);
+  width: 2090px;
+  height: 780px;
+  object-fit: cover;
+  object-position: center;
+}
+/*#endregion SearchResults*/
+
+/*#region About*/
+.pupMain_img {
+  position: absolute;
+  z-index: 0;
+  top: 120px;
+  right: 0px;
+  opacity: 10%;
+  filter: blur(0.3rem);
+  width: 2090px;
+  height: 200px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.about_pup {
+  padding-inline: 70px;
+  margin-block: 50px;
+}
+
+.about_pupTxt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 2.4px;
+  opacity: 0.8;
+  text-align: justify;
+}
+/*#endregion About*/
+
+
+/*#region Profile Page*/
+.user_basic {
+  padding: var(--pad-mar-med);
+  border-radius: var(--br-general);
+  background-color: var(--cc-user-basic-bg);
+  box-shadow: 0px 5px 10px 2px var(--cc-box-shadow);
+}
+
+.profile_menu:hover {  
+  background-color: var(--background);
+  color: var(--cc-txt-color2);
+  padding: var(--pad-mar-med);
+  border-radius: var(--br-general);
+  font-weight: 700;
+}
+
+.right_panel {
+  background-color: var(--background);
+  width: 75%;
+  border-radius: var(--br-general);
+}
+
+.info_content {
+  background-image: url('/images/materials/streetart.jpg');
+  background-position-x: center;
+  background-position-y: center;
+  object-fit: cover;
+  padding-block: var(--pad-mar-min);
+  opacity: 0.9;
+  border-radius: var(--br-general);
+}
+
+.street_art {
+  border-radius: var(--br-general);
+  position: absolute;
+  z-index: -1;
+  top: 150px;
+  right: 65px;
+  opacity: 10%;
+  filter: blur(0.3rem);
+  width: 930px;
+  height: 610px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.preview_content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profPic_cont {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin: var(--pad-mar-xlg);
+}
+
+.profInfo_cont {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 8px;
+}
+
+.profInfo_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 18px;
+}
+
+.profInfo_content {
+  font-family: var(--ff-mainTxt);
+  font-weight: normal;
+  color: var(--cc-txt-color2);
+  opacity: 90%;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.placeHolderProfile {
+  width: 120px;
+  height: 130px;
+  border-radius: 60px;
+}
+
+
+.uploadBtn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-weight: 600;
+}
+
+
+.uploadBtn:hover {
+  background-color: var(--cc-sub-hover);
+}
+
+.personalInfo_inputs {
+  padding: var(--pad-mar-sm);
+  width: 350px;
+  border-radius: var(--br-general);
+  opacity: 0.8;
+  color: var(--cc-txt-color1);
+}
+
+.personalInfo_labels {
+  color: var(--cc-txt-color2);
+  margin-left: var(--pad-mar-sm);
+  margin-top: var(--pad-mar-sm);
+  font-family: var(--ff-mainTxt);
+  letter-spacing: 1.5px;
+  font-size: 14px;
+}
+
+.edit_security {
+  margin-inline: var(--pad-mar-xlg);
+  margin-block: var(--pad-mar-xlg);
+}
+
+.securityInfo_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 24px;
+}
+
+.change_pass {
+  margin-inline: var(--pad-mar-lg);
+  margin-block: var(--pad-mar-med);
+}
+
+.changePass_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 16px; 
+}
+ 
+.updateInformation_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-family: var(--ff-buttons);
+  font-weight: 600;
+  margin-inline: 55px;
+}
+
+.updatePassword_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-family: var(--ff-buttons);
+  font-weight: 600;
+}
+
+.my_library {
+  margin-inline: var(--pad-mar-xlg);
+  margin-block: var(--pad-mar-xlg);
+}
+
+.libraryInfo_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 24px;  
+}
+
+.upload_data {
+  margin-inline: var(--pad-mar-lg);
+  margin-block: var(--pad-mar-med);  
+}
+
+.upload_label {
+  font-family: var(--ff-mainTxt);
+  font-weight: 800;
+  color: var(--cc-txt-color2);
+  font-size: 16px;   
+}
+
+.upload_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-sm);
+  border-radius: var(--br-general);
+  font-family: var(--ff-buttons);
+  font-weight: 600;  
+}
+/*#endregion Profile Page*/
+
+
+/*#region Footer Page*/
+.foot_cont {
+  background-color: var(--background);
+  padding: var(--pad-mar-max);
+}
+
+.logo_footer {
+  width: 180px;
+  height: 180px;
+}
+
+.footer_links:hover {
+  text-decoration: underline;
+  font-weight: 700;
+}
+/*#endregion Footer Page*/
+
+
+/*#region Upload */
+.uploadMaterial_content {
+  padding-inline: var(--pad-mar-max);
+  padding-block: var(--pad-mar-med);
+}
+
+.submit_labels {
+  font-family: var(--ff-mainTxt);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.material_inputs {
+  border: 1px solid var(--cc-txt-color1);
+  padding-inline: var(--pad-mar-sm);
+  padding-block: var(--pad-mar-sm);
+  width: 60%;
+}
+
+.author_inputs {
+  border: 1px solid var(--cc-txt-color1);
+  padding-inline: var(--pad-mar-sm);
+  padding-block: var(--pad-mar-sm);
+  width: 300px;
+}
+
+.submit_instructions {
+  font-family: var(--ff-mainTxt);
+  font-size: 14px;
+  opacity: 0.8;
+  letter-spacing: 5%;
+}
+
+.add_author {
+  background-color: var(--background);
+  padding: var(--pad-mar-sm);
+  color: var(--cc-txt-color2);
+  border-radius: var(--br-general);
+  font-weight: 700;
+} .add_author:hover {
+  background-color: var(--cc-main-color-hover);
+}
+
+#abstract_input {
+  border: 1px solid var(--cc-txt-color1);
+}
+
+.tag_content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  background: #f9f9f9;
+}
+
+.tag_items {
+  display: flex;
+  align-items: center;
+  background-color: #eee;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.tag_items span {
+  margin-right: 0.3rem;
+}
+
+.tag_remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-weight: bold;
+}
+
+.tag_input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  padding: 0.3rem;
+  font-size: 0.875rem;
+  background: transparent;
+}
+
+.material_drop {
+  padding: var(--pad-mar-med);
+  width: 30%;
+}
+
+.material_pub_drop {
+  padding: var(--pad-mar-med);
+  width: 30%;
+}
+
+.upload_material_btn {
+  background-color: var(--background);
+  padding: var(--pad-mar-sm);
+  color: var(--cc-txt-color2);
+  border-radius: var(--br-general);
+  font-weight: 700;
+} .upload_material_btn:hover {
+  background-color: var(--cc-main-color-hover);
+}
+
+.submit_material_btn {
+  background-color: var(--cc-sub-color);
+  padding: var(--pad-mar-med);
+  font-family: var(--ff-buttons);
+  font-size: 15px;
+  text-transform: uppercase;
+  color: var(--cc-txt-color1);
+  border-radius: var(--br-general);
+  font-weight: 700;
+} .submit_material_btn:hover {
+  background-color: var(--cc-sub-hover);
+}
+/*#endregion Upload */
+
+.bg-maroon { background-color: #800000; }
+.bg-gold { background-color: #FFD700; }
+.shadow-lg { box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); }
+.rounded-lg { border-radius: 8px; }
+.transition { transition: all 0.3s ease-in-out; }
+
+// layout.js
+import { Cinzel, Montserrat, Red_Hat_Display } from "next/font/google";
+import "./globals.css";
+import './fontawesome.js';
+import { WebProvider } from "./WebsiteContext";
+
+const cinzel = Cinzel({
+  variable: "--ff-cinzel",
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  variable: "--ff-montserrat",
+  subsets: ["latin"],
+});
+
+const redHat = Red_Hat_Display({
+  variable: "--ff-redHat",
+  subsets: ["latin"],
+});
+
+export const metadata = {
+  title: "PUP OUS: ArchiTech Vault",
+  description: "Open Minds Open Access",
+  
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <WebProvider> 
+      <html lang="en">
+        <head>
+          <link rel="icon" href="/favicon.ico" />
+        </head>
+        <body
+          className={`${cinzel.variable} ${montserrat.variable} ${redHat.variable} antialiased`}
+        >
+          {children}
+        </body>
+      </html>
+    </WebProvider>
+  
+  );
+}
+
+// page.js
+"use client"
+
+import Home from "./homepage/page"
+import './fontawesome.js';
+
+
+
+export default function HomePage() {
+  return (
+    <Home />
+  );
+}
+
+
+// uploadmaterial.jsx
+"use client";
+
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownSection,
+  DropdownItem,
+} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { useWebsiteContext } from "../WebsiteContext";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import { useState } from "react";
+
+const Upload = () => {
+  const { handleUploadMaterial } = useWebsiteContext();
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+  const [references, setReferences] = useState([{ citation: "", url: "" }]);
+
+  const [materialData, setMaterialData] = useState({
+    title: "",
+    url: "",
+    authors: [{ firstName: "", lastName: "" }],
+    abstract: "",
+    materialType: "",
+    publicationDate: { month: "", day: "", year: "" },
+    pageCount: "",
+    referenceCount: "",
+    uploader: { firstName: "", lastName: "", email: "" },
+  });
+
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+
+  const addAuthor = () => {
+    setMaterialData((prev) => ({
+      ...prev,
+      authors: [...prev.authors, { firstName: "", lastName: "" }],
+    }));
+  };
+
+  const handleAuthorChange = (index, field, value) => {
+    setMaterialData((prev) => {
+      const updatedAuthors = [...prev.authors];
+      updatedAuthors[index][field] = value;
+      return { ...prev, authors: updatedAuthors };
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    setMaterialData((prev) => {
+      if (["month", "day", "year"].includes(name)) {
+        return {
+          ...prev,
+          publicationDate: { ...prev.publicationDate, [name]: value },
+        };
+      } else if (["firstName", "lastName", "email"].includes(name)) {
+        return {
+          ...prev,
+          uploader: { ...prev.uploader, [name]: value },
+        };
+      } else {
+        return { ...prev, [name]: value };
+      }
+    });
+  };
+
+  const handleTagInput = (e) => setTagInput(e.target.value);
+
+  const handleTagKeyDown = (e) => {
+    if ((e.key === "Enter" || e.key === "," || e.key === " ") && tagInput.trim()) {
+      e.preventDefault();
+      const newTag = tagInput.trim().replace(/,/g, "");
+      if (!tags.includes(newTag)) {
+        setTags((prev) => [...prev, newTag]);
+      }
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (index) => {
+    setTags(tags.filter((_, i) => i !== index));
+  };
+
+  const uploadPDFToSupabase = async (file) => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `pdfs/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from("pdfs")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) {
+        console.error("Supabase Upload Error:", error);
+        return null;
+      }
+
+      return data.path;
+    } catch (err) {
+      console.error("Unexpected error in uploadPDFToSupabase:", err);
+      return null;
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || !file.name) return;
+
+    const filePath = await uploadPDFToSupabase(file);
+    if (!filePath) return;
+
+    console.log("Successfully uploaded:", filePath);
+  };
+
+  const addReference = () => {
+    setReferences((prev) => [...prev, { citation: "", url: "" }]);
+  };
+
+  const handleReferenceChange = (index, field, value) => {
+    setReferences((prev) => {
+      const updated = [...prev];
+      updated[index][field] = value;
+      return updated;
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const { year, month, day } = materialData.publicationDate;
+    const monthIndex = months.indexOf(month) + 1;
+
+    const formattedPublicationDate =
+      year && monthIndex && day
+        ? `${year}-${String(monthIndex).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+        : null;
+
+    const citationsArray = references.map((ref) => ref.citation);
+    const urlsArray = references.map((ref) => ref.url);
+
+    // Get current user ID from Supabase auth
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error("Error fetching user or user not logged in:", userError);
+      alert("You must be logged in to submit material.");
+      return;
+    }
+
+    const finalData = {
+      ...materialData,
+      tags,
+      references: citationsArray,
+      url: urlsArray,
+      publicationDate: formattedPublicationDate,
+      user_id: user.id, // Add user id here to link the article to uploader
+    };
+
+    console.log("Submitting Data:", finalData);
+
+    await handleUploadMaterial(finalData);
+  };
+
+  return (
+    <div className="uploadMaterial_cont bg-[#fafaf9] min-h-screen">
+      <Header />
+      <div className="w-full px-4 md:px-10 py-10">
+        <h1 className="font-Red_Hat_Display uppercase font-black text-3xl mb-6 text-black">Submit Material</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Upload Material */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Upload Material</h2>
+            <div className="flex items-center gap-4">
+              <input type="file" accept="application/pdf" onChange={handleFileUpload} className="upload_material_btn" />
+              <p className="submit_instructions">Use this to find material to be submitted.</p>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Title of Material</h2>
+            <input
+              type="text"
+              name="title"
+              placeholder="Title of Material"
+              className="material_inputs w-full mt-2"
+              value={materialData.title}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* Authors */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Author(s)</h2>
+            {materialData.authors.map((_, index) => (
+              <div key={index} className="grid grid-cols-2 gap-4 mb-2">
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  className="author_inputs"
+                  value={materialData.authors[index].firstName}
+                  onChange={(e) => handleAuthorChange(index, "firstName", e.target.value)}
+                />
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  className="author_inputs"
+                  value={materialData.authors[index].lastName}
+                  onChange={(e) => handleAuthorChange(index, "lastName", e.target.value)}
+                />
+              </div>
+            ))}
+            <button type="button" onClick={addAuthor} className="add_author mt-4">+ Add Author</button>
+          </div>
+
+          {/* Abstract */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Abstract</h2>
+            <textarea
+              name="abstract"
+              value={materialData.abstract}
+              onChange={handleInputChange}
+              className="w-full h-32 mt-2 p-2 border rounded"
+            />
+          </div>
+
+          {/* Introduction */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Introduction</h2>
+            <textarea
+              name="introduction"
+              value={materialData.introduction}
+              onChange={handleInputChange}
+              className="w-full h-32 mt-2 p-2 border rounded"
+            />
+          </div>
+
+          {/* Tags */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Tags</h2>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {tags.map((tag, index) => (
+                <div key={index} className="tag_items">
+                  <span>{tag}</span>
+                  <button type="button" onClick={() => removeTag(index)} className="tag_remove">x</button>
+                </div>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={handleTagInput}
+                onKeyDown={handleTagKeyDown}
+                placeholder="Add Tags"
+                className="tag_inputs"
+              />
+            </div>
+          </div>
+
+          {/* Material Type */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Material Type</h2>
+            <select
+              name="materialType"
+              className="material_inputs"
+              value={materialData.materialType}
+              onChange={handleInputChange}
+            >
+              <option value="">Select a type</option>
+              <option value="Article">Article</option>
+              <option value="Book">Book</option>
+              <option value="Report">Report</option>
+              <option value="Thesis">Thesis</option>
+              <option value="Journal">Journal</option>
+            </select>
+          </div>
+
+          {/* Publication Date */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Publication Date</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+              <select name="month" value={materialData.publicationDate.month} onChange={handleInputChange} className="material_inputs">
+                <option value="">Month</option>
+                {months.map((month) => (
+                  <option key={month} value={month}>{month}</option>
+                ))}
+              </select>
+              <select name="day" value={materialData.publicationDate.day} onChange={handleInputChange} className="material_inputs">
+                <option value="">Day</option>
+                {days.map((day) => (
+                  <option key={day} value={day}>{day}</option>
+                ))}
+              </select>
+              <select name="year" value={materialData.publicationDate.year} onChange={handleInputChange} className="material_inputs">
+                <option value="">Year</option>
+                {years.map((year) => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Page Count */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Page Count</h2>
+            <input
+              type="number"
+              name="pageCount"
+              value={materialData.pageCount}
+              onChange={handleInputChange}
+              placeholder="Enter page count"
+              className="material_inputs w-full mt-2"
+            />
+            <h3 className="submit_instructions mt-2">
+              Enter the number of pages found in the submitted material.
+            </h3>
+          </div>
+
+          {/* Reference Count */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md mt-6">
+            <h2 className="submit_labels">Number of References</h2>
+            <input
+              type="number"
+              name="referenceCount"
+              value={materialData.referenceCount}
+              onChange={handleInputChange}
+              placeholder="Enter reference count"
+              className="material_inputs w-full mt-2"
+            />
+            <h3 className="submit_instructions mt-2">
+              Enter the number of references used in relation to the submitted material.
+            </h3>
+          </div>
+
+          {/* References */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">References</h2>
+            {references.map((ref, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+                <input
+                  type="text"
+                  placeholder="APA Citation"
+                  value={ref.citation}
+                  onChange={(e) => handleReferenceChange(index, "citation", e.target.value)}
+                  className="material_inputs"
+                />
+                <input
+                  type="url"
+                  placeholder="URL"
+                  value={ref.url}
+                  onChange={(e) => handleReferenceChange(index, "url", e.target.value)}
+                  className="material_inputs"
+                />
+              </div>
+            ))}
+            <button type="button" onClick={addReference} className="add_author mt-4">+ Add Reference</button>
+          </div>
+
+          {/* Uploader Info */}
+          <div className="bg-white w-full p-6 rounded-lg shadow-md">
+            <h2 className="submit_labels">Your Info</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <input type="text" name="firstName" value={materialData.uploader.firstName} onChange={handleInputChange} placeholder="First Name" className="material_inputs" />
+              <input type="text" name="lastName" value={materialData.uploader.lastName} onChange={handleInputChange} placeholder="Last Name" className="material_inputs" />
+            </div>
+            <input type="email" name="email" value={materialData.uploader.email} onChange={handleInputChange} placeholder="Email" className="material_inputs w-full mt-4" />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col gap-4">
+            <button type="submit" className="submit_material_btn">Submit Material</button>
+          </div>
+        </form>
+      </div>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Upload;
+
+
+// uploaderprofile.jsx
+// components/UserProfile.jsx
+
+"use client";
+
+import React from 'react';
+import './UserProfile.css'; // Optional: external CSS if needed
+
+const UserProfile = () => {
+  const user = {
+    fullname: "Juan G. Dela Cruz",
+    course: "BS Computer Engineering",
+    email: "Juan.DelaCruz@gmail.com",
+    mobile: "09123456789",
+    avatar: "\avatar.png"   };
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      height: '100vh',
+      backgroundColor: 'var(--background)',
+      padding: 'var(--pad-mar-lg)',
+      gap: '2rem',
+      flexWrap: 'wrap'
+    }}>
+      <div style={{
+        padding: 'var(--pad-mar-lg)',
+        textAlign: 'center',
+        borderRadius: 'var(--br-general)',
+        backgroundColor: 'var(--cc-user-basic-bg)',
+        boxShadow: '0px 5px 10px 2px black',
+        flex: 1,
+        minWidth: '300px'
+      }}>
+        <h1 style={{
+          marginBottom: '20px',
+          fontWeight: 'bold',
+          color: '#ffe100d5'
+        }}>
+          User Profile
+        </h1>
+        <img 
+          src={user.avatar} 
+          style={{
+            width: '100px',
+            height: '100px',
+            borderRadius: '60px',
+            margin: '0 auto',
+            display: 'block'
+          }}
+        />
+        <h2 style={{
+          marginTop: '1rem',
+          fontFamily: 'var(--ff-mainTxt)',
+          color: 'var(--cc-txt-color1)',
+          fontWeight: 'bold'
+        }}>
+          {user.fullname}
+        </h2>
+        <p style={{ color: 'var(--cc-txt-color1)', marginTop: '0.5rem' }}>{user.course}</p>
+        <p style={{ color: 'var(--cc-txt-color1)', marginTop: '0.5rem' }}>{user.email}</p>
+        <p style={{ color: 'var(--cc-txt-color1)', marginTop: '0.5rem' }}>{user.mobile}</p>
+        <p style={{
+          color: 'var(--cc-txt-color1)',
+          marginTop: '0.5rem',
+          opacity: 0.8
+        }}>
+          <strong>About Me:</strong> {user.story}
+        </p>
+      </div>
+
+      <div style={{
+        padding: 'var(--pad-mar-lg)',
+        borderRadius: 'var(--br-general)',
+        backgroundColor: 'var(--cc-user-basic-bg)',
+        boxShadow: '0px 5px 10px 2px black',
+        flex: 1,
+        minWidth: '300px'
+      }}>
+        <h2 style={{ fontWeight: 'bold', marginBottom: '20px' }}>Articles</h2>
+        {/* You can add article upload features here */}
+      </div>
+    </div>
+  );
+};
+
+export default UserProfile;
+
+// signuppage.jsx
+"use client"
+
+import React, { useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGlobe, faMobileScreen, faWifi, faCheck, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { supabase } from '@/lib/supabaseClient';
+import { useWebsiteContext } from '../WebsiteContext';
+
+
+
+const SignUp = () => {
+    const { handleSignup, loading } = useWebsiteContext();
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        birthdate: { month: "", day: "", year: "",},
+    });
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+    const months = [
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    }
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+    
+        if (name === "month" || name === "day" || name === "year") {
+            setFormData((prev) => ({
+                ...prev, 
+                birthdate: { ...prev.birthdate, [name]: value },
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
+    };    
+
+    const calculateAge = (year, month, day) => {
+        if (!year || !month || !day) {
+            console.error("Invalid birthdate input:", { year, month, day });
+            return null; // Return null if any value is missing
+        }
+    
+        // Convert inputs to integers to avoid unexpected issues
+        const yearInt = parseInt(year, 10);
+        const monthInt = parseInt(month, 10);
+        const dayInt = parseInt(day, 10);
+    
+        if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dayInt)) {
+            console.error("Invalid number format:", { year, month, day });
+            return null;
+        }
+    
+        const birthDate = new Date(yearInt, monthInt - 1, dayInt);
+        const today = new Date();
+    
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--; 
+        }
+    
+        console.log("Calculated Age:", age); // Debugging log
+        return age;
+    };
+    
+    
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+    
+        const { name, email, password, confirmPassword, birthdate } = formData || {};
+        const { month, day, year } = birthdate || {};
+    
+        console.log("Birthdate values before validation:", { year, month, day });
+    
+        if (!name || !email || !password || !confirmPassword || !month || !day || !year) {
+            setError("All fields are required.");
+            return;
+        }
+    
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+    
+        const months = {
+            January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+            July: 7, August: 8, September: 9, October: 10, November: 11, December: 12
+        };
+    
+        const yearInt = parseInt(year, 10);
+        const monthInt = months[month] || parseInt(month, 10);
+        const dayInt = parseInt(day, 10);
+    
+        if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dayInt)) {
+            console.error("Invalid number format after conversion:", { yearInt, monthInt, dayInt });
+            setError("Invalid birthdate. Please enter a valid date.");
+            return;
+        }
+    
+        console.log("Final Birthdate values:", { yearInt, monthInt, dayInt });
+    
+        const age = calculateAge(yearInt, monthInt, dayInt);
+        console.log("Calculated Age:", age);
+    
+        if (age === null || isNaN(age)) {
+            setError("Invalid birthdate. Please enter a valid date.");
+            return;
+        }
+    
+        await handleSignup(name, email, password, monthInt, dayInt, yearInt, age);
+    };
+
+    
+    return (
+        <div className="login_cont">
+            <div className="login_columns flex flex-row items-center justify-between">
+                <div className="flex flex-col items-center w-full h-screen py-6">
+                    <div className="flex flex-col items-center gap-2">
+                        <Link href={"https://www.pup.edu.ph/ous/"}>
+                            <Image src="/images/materials/openU.png" alt="ATVLogo" width={140} height={140} />
+                        </Link>
+                        <h1 className="font-Cinzel font-bold text-3xl tracking-widest">“Mula Sa ‘yo, Para sa Bayan”</h1>
+                    </div>
+
+                    <div className="flex flex-col mt-6 gap-6">
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faGlobe} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Global</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faMobileScreen} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Mobile Friendly</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faWifi} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Virtual Learning</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faCheck} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Learn and Work</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="login_panel flex flex-col items-center w-full h-screen py-2">
+                    <div className="login_content">
+                        <div className="flex flex-col items-center gap-2">
+                            <Link href={'./homepage/'}>
+                                <Image src="/images/logo.png" alt="openULogo" width={140} height={140} />
+                            </Link>
+                            <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
+                        </div>
+
+                        <form className="user_forms_signup" onSubmit={onSubmit}>
+                            <div className="name_input">
+                              <input type="text" placeholder="User Name" name='name' className="form_fields h-4 w-full p-5 rounded" value={formData.name} onChange={handleInputChange} />
+                            </div>
+                            <div className="email_input">
+                              <input type="text" placeholder="PUP Email" name='email' className="form_fields h-4 w-full p-5 rounded" value={formData.email} onChange={handleInputChange} />
+                            </div>
+                            <div className="password_input relative">
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" name='password' className="form_fields h-4 w-full p-5 rounded" value={formData.password} onChange={handleInputChange} />
+
+                                <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
+                                    <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
+                                </button>
+                            </div>
+                            
+                            <div className="password_input relative">
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Confirm Password" name='confirmPassword' className="form_fields h-4 w-full p-5 rounded" value={formData.confirmPassword} onChange={handleInputChange} />
+
+                                <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
+                                    <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
+                                </button>
+                            </div>
+
+                            <div className='flex flex-row justify-around gap-10'>
+                                <select name="month" value={formData.birthdate.month} onChange={handleInputChange} className="date_dropdown">
+                                    <option value="">Month</option>
+                                    {months.map((month, index) => (
+                                        <option key={index} value={month}>{month}</option>
+                                    ))}
+                                </select>
+
+                                <select name="day" value={formData.birthdate.day} onChange={handleInputChange} className="date_dropdown">
+                                    <option value="">Day</option>
+                                    {days.map((day, index) => (
+                                        <option key={index} value={day}>{day}</option>
+                                    ))}
+                                </select>
+
+                                <select name="year" value={formData.birthdate.year} onChange={handleInputChange} className="date_dropdown">
+                                <option value="">Year</option>
+                                    {years.map((year, index) => (
+                                        <option key={index} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            
+                            <div className='flex flex-row items-center justify-between gap-2'>
+                                <button className="signup_btn" type='submit' disabled={loading} >Sign Up</button>
+                                <Link href={"https://sis1.pup.edu.ph/"}><button className="sis_btn">PUP-SIS</button></Link>
+                            </div>
+                        </form>
+                    </div>
+
+                    <img src="./images/materials/obelisk.jpg" alt="PUP Pylon Image" className="obelisk_img"/>
+                </div>
+            </div>
+        </div>        
+    )
+}
+
+
+export default SignUp;
+
+// securitypanel.jsx
+"use client";
+
+import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "../header/page";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+
+
+const Security = () => {
+    return (
+        <div className="info_cont">
+            <div className="info_content">
+                <div className="edit_security">
+                    <h2 className="securityInfo_label">Security</h2>
+
+                    <div className="change_pass">
+                        <h3 className="changePass_label">Change Password</h3>
+
+                        <div className="password_inputs">
+                            <div className="password flex flex-col items-start mt-4">
+                                <input type="password" placeholder="Password" className="personalInfo_inputs"/>
+                                <label className="personalInfo_labels">Password</label>
+                            </div>
+                            
+                            
+                            <div className="confirm_password flex flex-col items-start mt-4">
+                                <input type="password" placeholder="Confirm Password" className="personalInfo_inputs"/>
+                                <label className="personalInfo_labels">Confirm Password</label>
+                            </div>
+
+                            <div className="flex flex-row items-center gap-10 mt-8">
+                                <p>Password Strength</p>
+
+                                <button className="updatePassword_btn">Update Password</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Security;
+
+// searchresults.jsx
+"use client";
+
+import { useState, useEffect } from "react";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/dropdown";
+import Link from "next/link";
+import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient"; 
+import { Lock, FileText, Share2 } from "lucide-react"; 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar as solidStar } from "@fortawesome/free-regular-svg-icons"; 
+import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
+import { useSearchParams } from 'next/navigation';
+
+
+const SearchResults = () => {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("query") || "";
+  const initialField = searchParams.get("field") || "all";
+
+  // Main States
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [inputValue, setInputValue] = useState(initialQuery);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [bookmarkedTitles, setBookmarkedTitles] = useState([]);
+  const [searchField, setSearchField] = useState(initialField); 
+  const [article, setArticle] = useState(null);
+  
+
+  // Filter states
+  const [sortBy, setSortBy] = useState("date");
+  const [dateRanges, setDateRanges] = useState([]);
+  const [customDate, setCustomDate] = useState("");
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+
+  const subjects = ["Accounting", "Agriculture", "Biology", "Chemistry", "Engineering", "Esports", "Health Science", "History", "Literature", "Social Science", "Sports", "Technology", "Wellness and Lifestyle"];
+
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      fetchMaterialsData(initialQuery);
+    } else {
+      fetchMaterialsData("");
+    }
+  }, [initialQuery, initialField])
+
+  useEffect(() => {
+    if (inputValue.trim() && !loading) { 
+      fetchMaterialsData(inputValue);
+    }
+  }, [inputValue, selectedSubjects, sortBy]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!inputValue.trim()) {
+      alert("Please input a search term.");
+      fetchMaterialsData(""); 
+    } else {
+      fetchMaterialsData(inputValue);
+    }
+  };
+  
+  const fetchMaterialsData = async (query) => {
+    const trimmedQuery = query.trim();
+    setLoading(true);
+    try {
+      let supaQuery = supabase.from("Materials").select("*").eq("is_approved", true);
+
+      if (selectedSubjects.length > 0) {
+        const subjectFilters = selectedSubjects.map(
+          (subject) => `subject.ilike.%${subject}%`
+        );
+        supaQuery = supaQuery.or(subjectFilters.join(","));
+      }
+      
+  
+
+      if (searchField === "all" || searchField === "author") {
+        if (trimmedQuery.includes(" ")) {
+          const [firstName, lastName] = trimmedQuery.split(" ");
+          const lowerFirst = firstName.toLowerCase();
+          const lowerLast = lastName.toLowerCase();
+  
+          if (searchField === "all") {
+            supaQuery = supaQuery.or([
+              `title.ilike.%${trimmedQuery}%`,
+              `abstract.ilike.%${trimmedQuery}%`,
+              `tags.ilike.%${trimmedQuery}%`,
+              `materialType.ilike.%${trimmedQuery}%`,
+              `authors->>0.ilike.%${lowerFirst}%`, 
+              `authors->>1.ilike.%${lowerLast}%`
+            ].join(","));
+          }
+  
+          if (searchField === "author") {
+            supaQuery = supaQuery.or([
+              `authors->>0.ilike.%${lowerFirst}%`, 
+              `authors->>1.ilike.%${lowerLast}%`
+            ].join(","));
+          }
+        } else {
+          if (searchField === "all") {
+            supaQuery = supaQuery.or([
+              `title.ilike.%${trimmedQuery}%`,
+              `abstract.ilike.%${trimmedQuery}%`,
+              `tags.ilike.%${trimmedQuery}%`,
+              `materialType.ilike.%${trimmedQuery}%`,
+              `authors->>0.ilike.%${trimmedQuery}%`, 
+              `authors->>1.ilike.%${trimmedQuery}%` 
+            ].join(","));
+          } else if (searchField === "author") {
+            supaQuery = supaQuery.or([
+              `authors->>0.ilike.%${trimmedQuery}%`, 
+              `authors->>1.ilike.%${trimmedQuery}%` 
+            ].join(","));
+          }
+        }
+      } else if (searchField === "keywords") {
+        supaQuery = supaQuery.or([
+          `title.ilike.%${trimmedQuery}%`,
+          `abstract.ilike.%${trimmedQuery}%`,
+          `tags.ilike.%${trimmedQuery}%`
+        ].join(","));
+      } else if (searchField === "material") {
+        supaQuery = supaQuery.ilike("materialType", `%${trimmedQuery}%`);
+      }
+
+      const { data, error } = await supaQuery;
+      if (error) throw error;
+
+      // Apply date filtering
+      let filteredResults = filterByDate(data);
+
+      // Apply sorting
+      filteredResults = sortResults(filteredResults);
+
+      setResults(filteredResults);
+    } catch (err) {
+      console.error(err);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMaterialsData("");  // Fetch all on load
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (inputValue.trim()) {
+        await fetchMaterialsData(inputValue);
+      } else {
+        setResults([]);
+        setLoading(false);
+      }
+  
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+  
+      if (user) {
+        const { data, error } = await supabase
+          .from("Bookmarks")
+          .select("*")
+          .eq("user_id", user.id);
+  
+        if (!error && data) {
+          setBookmarks(data);
+          setBookmarkedTitles(data.map((b) => b.title));
+        }
+      }
+    };
+  
+    fetchData();
+  }, [inputValue]);
+
+  useEffect(() => {
+    const sorted = sortResults([...results]); 
+    setResults(sorted);
+  }, [sortBy]);
+
+
+  useEffect(() => {
+    fetchMaterialsData(inputValue); 
+  }, [inputValue, selectedSubjects]);
+
+  
+  const handleDateRangeChange = (range) => {
+    if (dateRanges.includes(range)) {
+      setDateRanges(dateRanges.filter((r) => r !== range));
+    } else {
+      setDateRanges([...dateRanges, range]);
+    }
+  };  
+
+  function handleSubjectChange(subject) {
+    setSelectedSubjects((prev) =>
+      prev.includes(subject)
+        ? prev.filter((s) => s !== subject)
+        : [...prev, subject]
+    );
+  } 
+
+  const sortResults = (results) => {
+    switch (sortBy) {
+      case "date":
+        return results.sort((a, b) => new Date(a.publicationDate) - new Date(b.publicationDate));
+      case "citation":
+        return results.sort((a, b) => (a.citationCount ?? 0) - (b.citationCount ?? 0));
+      case "reference":
+        return results.sort((a, b) => (a.referenceCount ?? 0) - (b.referenceCount ?? 0));
+      default:
+        return results;
+    }
+  };
+  
+  const handleSortChange = (item) => {
+    setSortBy(item);
+  };
+  
+
+  const filterByDate = (results) => {
+    if (dateRanges.length === 0 && !customDate) {
+      return results;
+    }
+
+    let cutoffYears = dateRanges.map((range) => ({
+      "Since 2000": 2000,
+      "Since 2010": 2010,
+      "Since 2020": 2020,
+    }[range]));
+
+    if (customDate) {
+      cutoffYears.push(parseInt(customDate));
+    }
+
+    return results.filter((res) => {
+      if (!res.publicationDate) return false;
+      const pubYear = new Date(res.publicationDate).getFullYear();
+      return cutoffYears.some((year) => pubYear >= year);
+    });
+  };
+  
+  const filteredResults = filterByDate(results);
+  const sortedResults = sortResults(filteredResults);
+
+  
+  return (
+    <div className="search_cont">
+      <div className="search_content">
+        <div className="relative z-50">
+          <Header />
+        </div>
+
+        <div className="banner_cont">
+          <img
+            src="/images/materials/pup_mural.png"
+            alt="PUP Mural"
+            className="mural_img"
+          />
+          <div className="banner_content p-8 flex flex-col items-center justify-around gap-28 w-screen">
+            <h1 className="right_txt font-Cinzel font-black uppercase text-med text-white opacity-80">
+              Open Minds with Open Acess
+            </h1>
+
+            <div className="search_bar_cont relative">
+              <div className="search_bar_content flex flex-row">
+                <div className="dropdown">
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <div
+                        className="drop_btn flex flex-row items-center gap-min py-med px-lg border cursor-pointer"
+                      >
+                        <Image
+                          src="/images/materials/SVGs/down.svg"
+                          alt="dropdownBtn"
+                          width={30}
+                          height={30}
+                        />
+                        <p className="drop_btnTxt font-Montserrat text-[16px] font-medium text-black w-[110px]">
+                          {{
+                            all: "All Fields",
+                            keywords: "Keywords",
+                            author:   "Author",
+                            material: "Material Type",
+                          }[searchField]}
+                        </p>
+                      </div>
+                    </DropdownTrigger>
+
+                    <DropdownMenu
+                      className="drop_menu bg-[#E5E5E5] rounded-[5px] w-[200px]"
+                      aria-label="Filter Options"
+                      onAction={(key) => setSearchField(key)}
+                    >
+                      <DropdownItem
+                        key="all"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                      >
+                        <span className="font-medium">All Fields</span> <span className="font-normal">(Default)</span>              
+                      </DropdownItem>
+                      <DropdownItem
+                        key="keywords"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                      >
+                        <span className="font-medium">Keywords</span>           
+                      </DropdownItem>
+                      <DropdownItem
+                        key="author"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                      >
+                        <span className="font-medium">Author</span>
+                      </DropdownItem>
+                      <DropdownItem
+                        key="material"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                      >
+                        <span className="font-medium">Material Type</span>
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+
+                <div className="search_field">
+                  <input
+                    type="text"
+                    placeholder="What are you looking for?"
+                    className="search_field_bar h-med p-lg"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSearch(e);
+                    }}
+                  />
+                </div>
+
+                <div className="search_btn">
+                  <button className="searchBtn" onClick={handleSearch}>
+                    <Image
+                      src="/images/materials/SVGs/search.svg"
+                      alt="searchBtn"
+                      width={30}
+                      height={30}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-row px-12 py-8 gap-10">
+        {/* Left Filters Panel */}
+        <div className="w-1/4 bg-white">
+          <h2
+            className="mb-4"
+            style={{
+              fontSize: "40px",
+              fontFamily: "'Red Hat Display', sans-serif",
+              color: "#4F0505",
+              fontWeight: "bold",
+            }}
+          >
+            {results.length} Results Found
+          </h2>
+
+          {/* Sort By */}
+          <div className="mb-6" style={{ paddingLeft: "20px" }}>
+            <h3
+              className="mb-2"
+              style={{
+                fontSize: "30px",
+                fontFamily: "'Red Hat Display', sans-serif",
+                color: "#000000",
+                fontWeight: "bold",
+              }}
+            >
+              Sort By
+              <span
+                className="sort-order-label"
+                style={{
+                  display: "inline-block",        
+                  verticalAlign: "middle",       
+                  backgroundColor: "#4F0505",
+                  color: "#FFFFFF",
+                  fontSize: "10px",
+                  fontFamily: "'Red Hat Display', sans-serif",
+                  fontWeight: 800,
+                  padding: "2px 5px",
+                  borderRadius: "5px",
+                  marginLeft: "10px",
+                  marginTop: "1px",
+                  marginBottom: "8px",      
+                }}
+              >
+                Ascending
+              </span>
+            </h3>
+            <ul className="space-y-1 text-sm" style={{
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 500,
+              fontSize: "20px"
+            }}>
+              {["date", "citation", "reference"].map((item) => (
+                <li key={item}>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="sort"
+                      value={item}
+                      checked={sortBy === item}
+                      onChange={() => handleSortChange(item)}
+                      className="appearance-none w-4 h-4 border-2 border-gray-400 rounded-full checked:border-[black] checked:bg-[#FFE200] focus:outline-none"
+                    />
+                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Date Published */}
+          <div className="mb-6" style={{ paddingLeft: "20px" }}>
+            <h3
+              className="mb-2"
+              style={{
+                fontSize: "30px",
+                fontFamily: "'Red Hat Display', sans-serif",
+                color: "#000000",
+                fontWeight: "bold",
+              }}
+            >
+              Date Published
+            </h3>
+            <ul className="space-y-1 text-sm" style={{
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 500,
+              fontSize: "20px"
+            }}>
+              {["Since 2000", "Since 2010", "Since 2020"].map((range) => (
+                <li key={range}>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      value={range}
+                      checked={dateRanges.includes(range)}
+                      onChange={() => handleDateRangeChange(range)}
+                      className="appearance-none w-4 h-4 border-2 border-gray-400 rounded-full checked:border-[black] checked:bg-[#FFE200] focus:outline-none"
+                    />
+                    {range}
+                  </label>
+                </li>
+              ))}
+              <li className="mt-2">
+                <label className="block text-sm mb-2">Custom Year</label>
+                <input
+                  type="number"
+                  className="w-full border p-1 rounded text-sm"
+                  placeholder="Enter year"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                />
+              </li>
+            </ul>
+          </div>
+
+          {/* Subjects */}
+          <div className="mb-6" style={{ paddingLeft: "20px" }}>
+            <h3
+              className="mb-2"
+              style={{
+                fontSize: "30px",
+                fontFamily: "'Red Hat Display', sans-serif",
+                color: "#000000",
+                fontWeight: "bold",
+              }}
+            >
+              Subjects
+            </h3>
+            <ul className="space-y-1 text-sm" style={{
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 500,
+              fontSize: "20px"
+            }}>
+              {subjects.map((subject) => (
+                <li key={subject}>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      value={subject}
+                      checked={selectedSubjects.includes(subject)}
+                      onChange={() => handleSubjectChange(subject)}
+                      className="appearance-none w-4 h-4 border-2 border-gray-400 rounded-full checked:border-[black] checked:bg-[#FFE200] focus:outline-none"
+                    />
+                    {subject}
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Results Panel */}
+        <div className="w-full md:w-3/4 flex flex-col gap-6">
+        {loading ? (
+          <p>Loading results...</p>
+        ) : sortedResults.length > 0 ? (
+          sortedResults.map((res, index) => (
+            <div
+              key={index}
+              className="article_container bg-white flex items-start gap-6 border border-black rounded-md shadow-md"
+              style={{ width: "100%", height: "240px", position: "relative" }}
+            >
+              {/* Maroon Icon Sidebar */}
+              <div
+                className="w-20 h-full flex flex-col items-center justify-around text-white"
+                style={{ backgroundColor: "#4F0505" }}
+              >
+                <button onClick={async () => {
+                    if (!res.pdf_path) {
+                      alert("No PDF available for this publication.");
+                      return;
+                    }
+  
+                    const { data, error } = await supabase
+                      .storage
+                      .from("pdfs") 
+                      .createSignedUrl(res.pdf_path, 60); 
+  
+                    if (error) {
+                      console.error("Error generating download link:", error);
+                      alert("Failed to download file.");
+                      return;
+                    }
+  
+                    // Trigger download
+                    const link = document.createElement("a");
+                    link.href = data.signedUrl;
+                    link.download = res.title + ".pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}>
+                  <FileText size={23} />
+                </button>
+                <Share2 size={23} />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                {/* Title */}
+                <h4
+                  className="pt-5 text-xl font-semibold mb-2"
+                  style={{
+                    fontFamily: "'Red Hat Display', sans-serif",
+                    color: "#000000",
+                    fontWeight: 700,
+                    fontSize: "30px",
+                    height: "52px",
+                    paddingLeft: "10px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {res.title}
+                </h4>
+
+                {/* Citation Count */}
+                <h5
+                  className="pt-1 text-l mb-1"
+                  style={{
+                    fontFamily: "'Red Hat Display', sans-serif",
+                    paddingLeft: "10px",
+                    fontWeight: 400,
+                    fontSize: "20px",
+                    color: "#4F0505",
+                  }}
+                >
+                  Citations: {res.citationCount ?? 0}
+                </h5>
+
+                {/* Authors */}
+                <h4
+                  className="pt-2 text-l"
+                  style={{
+                    fontFamily: "'Red Hat Display', sans-serif",
+                    color: "#000000",
+                    paddingLeft: "10px",
+                    fontWeight: 600,
+                    fontSize: "20px",
+                  }}
+                >
+                  Author/s:
+                </h4>
+
+                <h5
+                  className="pt-1 text-l"
+                  style={{
+                    fontFamily: "'Red Hat Display', sans-serif",
+                    paddingLeft: "10px",
+                    fontSize: "15px",
+                  }}
+                >
+                  {Array.isArray(res.authors)
+                    ? res.authors.map((author) => `${author.firstName} ${author.lastName}`).join(", ")
+                    : "Unknown Author"}
+                </h5>
+
+                {/* Date Published */}
+                <h5
+                  className="pt-3 text-l"
+                  style={{
+                    fontFamily: "'Red Hat Display', sans-serif",
+                    paddingLeft: "10px",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Date Published:{" "}
+                  <span style={{ fontWeight: 400 }}>
+                    {res.publicationDate
+                      ? new Date(res.publicationDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Unknown Date"}
+                  </span>
+                </h5>
+
+                {/* Material Type */}
+                <h5
+                  className="pt-1 text-l"
+                  style={{
+                    fontFamily: "'Red Hat Display', sans-serif",
+                    paddingLeft: "10px",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Material Type:{" "}
+                  <span style={{ fontWeight: 400 }}>
+                    {res.materialType || "Unknown"}
+                  </span>
+                </h5>
+              </div>
+
+              {/* Abstract Link */}
+              <Link href={`/article_journalpage?title=${encodeURIComponent(res.title)}`}>
+                <div
+                  className="flex items-center justify-center px-4 py-2 rounded transition duration-300 transform hover:scale-105 hover:shadow-lg"
+                  style={{
+                    backgroundColor: "#FFE200",
+                    color: "#000000",
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: "bold",
+                    fontSize: "15px",
+                    width: "100px",
+                    height: "30px",
+                    marginTop: "150px",
+                    marginRight: "20px",
+                  }}
+                >
+                  Abstract
+                </div>
+              </Link>
+
+              {/* Bookmark Button */}
+              <button
+                onClick={() => handleBookmark(res)}
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+                title="Bookmark"
+              >
+                <FontAwesomeIcon
+                  icon={bookmarkedTitles.includes(res.title) ? solidStar : regularStar}
+                  style={{ color: "#FFD700", fontSize: "20px" }}
+                />
+              </button>
+            </div>
+            ))
+          ) : (
+            <div className="col-span-full bg-red-100 text-red-700 p-6 rounded-lg text-center font-medium">
+              No results found. Try different keywords or filters.
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default SearchResults;
+
+// profilepage.jsx
+"use client";
+
+import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+
+import PersonalInfo from "../personalinfopanel/page";
+import Security from "../securitypanel/page";
+import Bookmarks from "../bookmarkspanel/page";
+
+import { useState, useEffect } from "react";
+import { useWebsiteContext } from "../WebsiteContext";
+
+
+const Profile = () => {
+    const [selectedSection, setSelectedSection] = useState('PersonalInfo');
+    const { fetchUserInfo, user, userInfo } = useWebsiteContext();
+    const [name, setName] = useState(null);
+    const [email, setEmail] = useState(null);
+    const [birthdate, setBirthdate] = useState(null);
+    const [age, setAge] = useState(null);
+    const [studentNumber, setStudentNumber] = useState("");
+
+    useEffect(() => {
+        if (!user || !user.id) {
+            console.warn("User is not available yet.");
+            return;
+        }
+
+        console.log('userId in UserProfile:', user.id); 
+
+        const getUserData = async () => {
+            const userData = await fetchUserInfo(user.id);
+            if (!userData) {
+                console.error("User data not found.");
+                return;
+            }
+
+            setName(userData.full_name);
+            setEmail(userData.userEmail);
+            setBirthdate(userData.userBirthdate);
+            setAge(userData.userAge);
+            setStudentNumber(userData.userStudentNumber)
+        };
+
+        getUserData();
+    }, [user]);
+
+    return (
+        <div className="profile_cont">
+            <div className="profile_content">
+                <Header />
+
+                <div className="profile_info flex flex-row justify-between mx-16 my-4 tracking-min">
+                    <div className="left_panel flex flex-col gap-6">
+                        <h1 className="font-Red_Hat_Display uppercase font-extrabold text-sm">Your Account</h1>
+
+                        <div className="user_basic flex flex-row gap-4">
+                            <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} style={{ width: "60px", height: "60px", borderRadius: "60px" }} />
+
+                            <div className="flex flex-col justify-center items-start gap-2">
+                                <h1 className="font-Red_Hat_Display font-bold text-min">{name}</h1>
+                                <h1 className="font-Red_Hat_Display text-min">{studentNumber}</h1>
+                            </div>
+                        </div>
+
+                        <div className="profile_btns flex flex-col items-start justify-around gap-5">
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("PersonalInfo")}
+                            >
+                                    <FontAwesomeIcon icon={faUser} size="1x" className="profileSVGs" />Personal Info</button>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("Security")}
+                            >
+                                    <FontAwesomeIcon icon={faLock} size="1x" className="profileSVGs" />Security</button>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("Bookmarks")}
+                            >
+                                    <FontAwesomeIcon icon={faBook} size="1x" className="profileSVGs" />Bookmarks</button>
+                        </div>
+                    </div>
+                    
+                    <div className="right_panel">
+                        {selectedSection === "PersonalInfo" && <PersonalInfo />}
+                        {selectedSection === "Security" && <Security />}
+                        {selectedSection === "Bookmarks" && <Bookmarks />}
+                    </div>
+                    
+                </div>
+
+                <Footer />
+            </div>
+        </div>
+    )
+}
+
+export default Profile;
+
+// personalinfopanel.jsx
+"use client";
+
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "../header/page";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+import { useWebsiteContext } from "../WebsiteContext";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+
+const PersonalInfo = () => {
+    const { fetchUserInfo, user, updateUserInfo, userInfo } = useWebsiteContext();
+    const [name, setName] = useState(null);
+    const [email, setEmail] = useState(null);
+    const [birthdate, setBirthdate] = useState(null);
+    const [age, setAge] = useState(null);
+    
+    // Consolidate personal information into a single object state
+    const [personalInfo, setPersonalInfo] = useState({
+        nickname: "",
+        gender: "",
+        studentNumber: "",
+        personalEmail: "",
+        mobileNumber: "",
+        course: ""
+    });
+
+    useEffect(() => {
+        if (!user || !user.id) {
+            console.warn("User is not available yet.");
+            return;
+        }
+
+        console.log('userId in UserProfile:', user.id);
+
+        const getUserData = async () => {
+            const userData = await fetchUserInfo(user.id);
+            if (!userData) {
+                console.error("User data not found.");
+                return;
+            }
+
+            setName(userData.full_name);
+            setEmail(userData.userEmail);
+            setBirthdate(userData.userBirthdate);
+            setAge(userData.userAge);
+            
+            setPersonalInfo({
+                nickname: userData.nickname || "",
+                gender: userData.gender || "",
+                studentNumber: userData.userStudentNumber || "",
+                personalEmail: userData.userPersonalEmail || "",
+                mobileNumber: userData.userMobileNumber || "",
+                course: userData.userCourse || "",
+                profileUrl: userData.profile_url || ""
+            });
+        };
+
+        getUserData();
+    }, [user]);
+
+    const handleUpdate = async () => {
+        if (!user || !user.id) {
+            alert("User not found!");
+            return;
+        }
+
+        try {
+            await updateUserInfo(user.id, personalInfo);
+            
+            // Refresh local state with updated info
+            const refreshedData = await fetchUserInfo(user.id);
+
+            if (refreshedData) {
+                setPersonalInfo({
+                nickname: refreshedData.nickname || "",
+                gender: refreshedData.gender || "",
+                studentNumber: refreshedData.userStudentNumber || "",
+                personalEmail: refreshedData.userPersonalEmail || "",
+                mobileNumber: refreshedData.userMobileNumber || "",
+                course: refreshedData.userCourse || "",
+                profileUrl: userData.profile_url || ""
+            });
+            alert("Information updated successfully!");
+
+            } else {
+                setPersonalInfo({
+                    nickname: "",
+                    gender: "",
+                    studentNumber: "",
+                    personalEmail: "",
+                    mobileNumber: "",
+                    course: ""
+                });
+            }
+        } catch (error) {
+            console.error("Error updating user info:", error);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setPersonalInfo((prevInfo) => ({
+            ...prevInfo,
+            [name]: value
+        }));
+    };
+
+    const handleUploadProfile = async (e) => {
+        try {
+            const file = e.target.files[0];
+            if (!file || !user?.id) {
+                alert("Please select a file and ensure you're logged in");
+                return;
+            }
+
+            // Validate file type
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const validTypes = ['jpg', 'jpeg', 'png', 'gif'];
+            if (!validTypes.includes(fileExt)) {
+                alert("Please upload an image file (jpg, jpeg, png, gif)");
+                return;
+            }
+
+            const fileName = `${user.id}.${fileExt}`;
+            const filePath = `${user.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("profile_pictures")
+                .upload(filePath, file, { 
+                    upsert: true,
+                    cacheControl: '3600'
+                });
+
+            if (uploadError) {
+                console.error("Upload error:", uploadError);
+                alert(`Upload failed: ${uploadError.message}`);
+                return;
+            }
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from("profile_pictures")
+                .getPublicUrl(filePath);
+
+            // Update user profile
+            const { error: updateError } = await supabase
+                .from("Users")
+                .update({ profile_url: publicUrl })
+                .eq("id", user.id)
+
+            if (updateError) {
+                console.error("Profile update error:", updateError);
+                alert(`Failed to update profile: ${updateError.message}`);
+                return;
+            }
+
+            await fetchUserInfo(user.id);
+
+            setPersonalInfo(prev => ({ ...prev, profileUrl: publicUrl }));
+
+
+            alert("Profile picture updated successfully!");
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            alert("An unexpected error occurred. Please try again.");
+        }
+
+        console.log('Storage URL:', supabase.storage.url);
+    };
+
+    return (
+        <div className="info_cont">
+            <div className="info_content">
+                <div className="preview_content">
+                    <div className="profPic_cont">
+                        <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
+
+                        <input type="file" accept="image/*" id="profileUpload" style={{ display: "none" }} onChange={handleUploadProfile}/>
+                        <button className="uploadBtn font-Montserrat text-min" onClick={() => document.getElementById("profileUpload").click()}>Change Photo</button>
+                    </div>
+
+                    <div className="profInfo_cont">
+                        <h2 className="profInfo_content"><span className="profInfo_label">Nickname:</span> {personalInfo.nickname}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Gender:</span> {personalInfo.gender}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Course:</span> {personalInfo.course}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Personal Email:</span> {personalInfo.personalEmail}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">PUP Email:</span> {email}</h2>
+                    </div>
+                </div>
+
+                <div className="edit_profile my-8">
+                    <h2 className="edit_label font-Red_Hat_Display text-white text-sm font-bold mx-10">Edit Profile</h2>
+
+                    <div className="edit_inputs flex flex-row">
+                        <div className="edit_input1 mx-14 flex flex-col gap-4">
+                            <div className="nickname flex flex-col items-start mt-4">
+                                <input type="text" placeholder="Nickname" className="personalInfo_inputs" name="nickname" value={personalInfo.nickname} onChange={handleChange} />
+                                <label className="personalInfo_labels">Nickname</label>
+                            </div>
+
+                            <div className="gender flex flex-col items-start">
+                                <input type="text" placeholder="Gender" className="personalInfo_inputs" name="gender" value={personalInfo.gender} onChange={handleChange} />
+                                <label className="personalInfo_labels">Gender</label>
+                            </div>
+
+                            <div className="studentNumber flex flex-col items-start mb-4">
+                                <input type="text" placeholder="Student No." className="personalInfo_inputs" name="studentNumber" value={personalInfo.studentNumber} onChange={handleChange} />
+                                <label className="personalInfo_labels">Student Number</label>
+                            </div>
+                        </div>
+
+                        <div className="edit_input2 mx-14 flex flex-col gap-4">
+                            <div className="personalEmail flex flex-col items-start mt-4">
+                                <input type="text" placeholder="Personal Email Address" className="personalInfo_inputs" name="personalEmail" value={personalInfo.personalEmail} onChange={handleChange} />
+                                <label className="personalInfo_labels">Personal Email Address</label>
+                            </div>
+
+                            <div className="mobileNo flex flex-col items-start">
+                                <input type="text" placeholder="Mobile Number" className="personalInfo_inputs" name="mobileNumber" value={personalInfo.mobileNumber} onChange={handleChange} />
+                                <label className="personalInfo_labels">Mobile Number</label>
+                            </div>
+
+                            <div className="course flex flex-col items-start mb-4">
+                                <input type="text" placeholder="Course" className="personalInfo_inputs" name="course" value={personalInfo.course} onChange={handleChange} />
+                                <label className="personalInfo_labels">Course</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" value="submit" className="updateInformation_btn" onClick={handleUpdate}>Update Information</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default PersonalInfo;
+
+// mylibrarypanel.jsx
+"use client";
+
+import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "../header/page";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+
+
+const MyLibrary = () => {
+    return (
+        <div className="info_cont">
+            <div className="info_content">
+                <div className="my_library">
+                    <h2 className="libraryInfo_label">My Library</h2>
+
+                    <div className="upload_data flex flex-row justify-between">
+                        <div>
+                            <h3 className="upload_label">Uploads</h3>
+                        </div>
+
+                        <div>
+                            <button className="upload_btn">Upload New</button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default MyLibrary;
+
+// loginpage.jsx
+"use client"
+
+import React, { useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGlobe, faMobileScreen, faWifi, faCheck, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { useWebsiteContext } from '../WebsiteContext';
+
+
+const Login = () => {
+    const { handleLogin, loading } = useWebsiteContext();
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    }
+
+    const handleSubmit = async (e) => {
+            e.preventDefault();
+            await handleLogin(email, password)
+    }
+
+    return (
+        <div className="login_cont">
+            <div className="login_columns flex flex-row items-center justify-between">
+                <div className="flex flex-col items-center w-full h-screen py-6">
+                    <div className="flex flex-col items-center gap-2">
+                        <Link href={"https://www.pup.edu.ph/ous/"}>
+                            <Image src="/images/materials/openU.png" alt="openULogo" width={140} height={140} />
+                        </Link>
+                        <h1 className="font-Cinzel font-bold text-3xl tracking-widest">“Mula Sa ‘yo, Para sa Bayan”</h1>
+                    </div>
+
+                    <div className="flex flex-col mt-6 gap-6">
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faGlobe} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Global</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faMobileScreen} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Mobile Friendly</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faWifi} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Virtual Learning</p>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <FontAwesomeIcon icon={faCheck} size="2x" color="white" className="svgConfOpenU" />
+                            <p className="font-Red_Hat_Display uppercase font-bold text-base">Learn and Work</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="login_panel flex flex-col items-center w-full h-screen py-6">
+                    <div className="login_content">
+                        <div className="flex flex-col items-center gap-2">
+                            <Link href={'./homepage/'}>
+                                <Image src="/images/logo.png" alt="ATVLogo" width={140} height={140} />
+                            </Link>
+                            <h1 className="font-Cinzel font-bold text-3xl text-white tracking-widest">Architech Vault</h1>
+                        </div>
+
+                        <form className="user_forms_login" onSubmit={handleSubmit}>
+                            <div className="username_input">
+                              <input type="text" placeholder="Username" value={email} onChange={(e) => setEmail(e.target.value)} className="form_fields h-10 w-full p-6 rounded" required/>
+                            </div>
+                            <div className="password_input relative">
+                                <input type={passwordVisible ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="form_fields h-10 w-full p-6 rounded" required/>
+
+                                <button type="button" onClick={togglePasswordVisibility} className='absolute right-3 top-2/4 transform -translate-y-2/4 mx-4'>
+                                    <FontAwesomeIcon icon={passwordVisible ? faEye : faEyeSlash} size="1x" color="gray" />
+                                </button>
+                            </div>
+
+                            <div className="form_btns flex flex-row items-center justify-between">
+                                <button  type='submit' className="login_btn2">{loading ? "Logging In..." : "Log In"}</button>
+                                <Link href={'./signuppage/'}><button className="signup_btn">Sign Up</button></Link>
+                            </div>
+                            <button className="forgot_pass font-Montserrat text-white text-opacity-90">Forgot Password?</button>
+                        </form>
+                    </div>
+
+                    <img src="./images/materials/obelisk.jpg" alt="PUP Pylon Image" className="obelisk_img"/>
+                </div>
+            </div>
+        </div>        
+    )
+}
+
+
+export default Login;
+
+// homepage.jsx
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import { supabase } from '@/lib/supabaseClient';
+
+const Home = () => {
+  const router = useRouter();
+
+  // mirror exactly what SearchResults expects:
+  const [inputValue, setInputValue] = useState("");
+  const [searchField, setSearchField] = useState("all");
+  const [validityMessage, setValidityMessage] = useState("");
+
+  const subjects = [
+    "all",
+    "keywords",
+    "author",
+    "material",
+  ];
+
+  // on Enter press in the input
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+
+  // when user clicks the button (or on Enter) we redirect
+  const handleSearch = async() => {
+    const {data: {user}} = await supabase.auth.getUser();
+    if (!user) {
+      setValidityMessage("Please log in to perform a search. Provide a valid PUP Account");
+      return;
+    }
+
+    const q = inputValue.trim();
+    if (!q) {
+      alert("Please input a search term.");
+      return;
+    }
+    // pass both query and field so SearchResults can pick them up
+    router.push(
+      `/searchresults?query=${encodeURIComponent(inputValue)}&field=${encodeURIComponent(searchField)}`);
+  };
+
+  return (
+    <div className="home_cont min-h-screen w-full bg-white">
+      <div className="home_content flex flex-col h-full">
+        <Header />
+
+        <div className="body mt-10 mb-40 flex items-center justify-between bg-background">
+          <div className="body_left">
+            <img
+              src="./images/materials/pylon2022.png"
+              alt="PUP Pylon Image"
+              className="pylon_img"
+            />
+          </div>
+
+          <div className="body_right p-8 flex flex-col align-left justify-around gap-28 w-min">
+            <h1 className="right_txt font-Cinzel font-black uppercase text-med text-white opacity-80">
+              Open Minds with Open Access
+            </h1>
+
+            {/* wrap in a form so Enter works everywhere */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch();
+              }}
+              className="search_bar_cont"
+            >
+              <div className="search_bar_content flex flex-row">
+                {/* dropdown for field */}
+                <div className="dropdown">
+                    <Dropdown>
+                    <DropdownTrigger>
+                        <div
+                        className="drop_btn flex flex-row items-center gap-min py-med px-lg border cursor-pointer"
+                        >
+                        <Image
+                            src="/images/materials/SVGs/down.svg"
+                            alt="dropdownBtn"
+                            width={30}
+                            height={30}
+                        />
+                        <p className="drop_btnTxt font-Montserrat text-[16px] font-medium text-black w-[110px]">
+                            {{
+                            all: "All Fields",
+                            keywords: "Keywords",
+                            author:   "Author",
+                            material: "Material Type",
+                            }[searchField]}
+                        </p>
+                        </div>
+                    </DropdownTrigger>
+
+                    <DropdownMenu
+                        className="drop_menu bg-[#E5E5E5] rounded-[5px] w-[200px]"
+                        aria-label="Filter Options"
+                        onAction={(key) => setSearchField(key)}
+                    >
+                        <DropdownItem
+                        key="all"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                        >
+                        <span className="font-medium">All Fields</span> <span className="font-normal">(Default)</span>              
+                        </DropdownItem>
+                        <DropdownItem
+                        key="keywords"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                        >
+                        <span className="font-medium">Keywords</span>           
+                        </DropdownItem>
+                        <DropdownItem
+                        key="author"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                        >
+                        <span className="font-medium">Author</span>
+                        </DropdownItem>
+                        <DropdownItem
+                        key="material"
+                        className="font-Montserrat text-black text-[16px] hover:bg-[#B6B4B4] w-full"
+                        >
+                        <span className="font-medium">Material Type</span>
+                        </DropdownItem>
+                    </DropdownMenu>
+                    </Dropdown>
+                </div>
+
+                {/* text input */}
+                <div className="search_field">
+                  <input
+                    type="text"
+                    placeholder="What are you looking for?..."
+                    className="search_field_bar h-med p-lg"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+
+                {/* search button */}
+                <div className="search_btn">
+                  <button
+                    type="button"
+                    className="searchBtn"
+                    onClick={handleSearch}
+                  >
+                    <Image
+                      src="/images/materials/SVGs/search.svg"
+                      alt="searchBtn"
+                      width={30}
+                      height={30}
+                    />
+                  </button>
+                </div>
+              </div>
+            {validityMessage && (
+              <p className="mt-2 text-red-600 text-min font-medium font-Montserrat">{validityMessage}</p>
+            )}
+            </form>
+
+            <div className="bottom_txt font-Red_Hat_Display text-white w-11/12 text-justify">
+              <p>
+                The Research Institute for Science and Technology (RIST)
+                integrates holistic programs to advance research in the life
+                sciences, physical sciences, mathematics, engineering, computing
+                and information sciences.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+// header.jsx
+"use client";
+
+import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import { useWebsiteContext } from "@/app/WebsiteContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faUpload } from "@fortawesome/free-solid-svg-icons";
+import AdminButton from "@/app/components/AdminButton";
+
+const Header = () => {
+    const { user, userInfo, handleLogout } = useWebsiteContext();
+    return (
+        <div className="header px-max py-lg flex flex-row items-center justify-between">
+            <div className="header_left">
+                <Link href={'./homepage/'}><img src="./images/logo.png" alt="ATV Logo" className="logo_img"/></Link>
+                <div className="logo_txt flex flex-col relative top-2">
+                    <a href="#">
+                        <h1 className="logo_h1 uppercase text-black">Architech Vault</h1>
+                    </a>
+                    <a href="#">
+                        <h2 className="logo_h2 uppercase text-black">Pup Open University</h2>
+                    </a>
+                </div>
+            </div>
+
+            <div className="header_right flex flex-row items-center gap-max">
+                <AdminButton userInfo={userInfo} />
+                <a href={'./aboutpage/'} className="about_btns font-Montserrat font-bold uppercase">About ATV</a>
+                
+        
+                {user ? (
+                    <Dropdown className="flex flex-col items-center justify-center">
+                        <DropdownTrigger>
+                            <button>
+                                <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={50} height={50} className="placeHolderImg" />
+                            </button>
+                        </DropdownTrigger>
+                        <DropdownMenu className="profile_drop_cont">
+                            <DropdownItem>
+                                <Link href={"./profilepage/"}><button className="profile_drop_btns font-Montserrat uppercase flex flex-row items-center gap-2"><FontAwesomeIcon icon={faUser} size="1x" color="black" />Profile</button></Link>
+                            </DropdownItem>
+                            <DropdownItem>
+                                <Link href={"./uploadmaterial/"}><button className="profile_drop_btns font-Montserrat uppercase flex flex-row items-center gap-2"><FontAwesomeIcon icon={faUpload} size="1x" color="black" />Upload</button></Link>
+                            </DropdownItem>
+                            <DropdownItem>
+                                <Link href={""}><button className="profile_drop_btns font-Montserrat uppercase" onClick={handleLogout}>Logout</button></Link>
+                            </DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown> 
+                ) : (
+                    <Link href={'./loginpage/'}><button className="login_btn px-lg py-sm font-Montserrat font-bold">LOGIN</button></Link>
+                )}
+            </div>
+        </div>
+    )
+};
+
+export default Header;
+
+// footer.jsx
+"use client";
+
+import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import { useWebsiteContext } from "../WebsiteContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faPaintRoller } from "@fortawesome/free-solid-svg-icons";
+
+
+const Footer = () => {
+    return (
+        <div className="foot_cont">
+            <div className="foot_content flex flex-row justify-around">
+                <div className="foot_links flex flex-row gap-28 justify-around">
+                    <div className="quick_links flex flex-col items-start gap-6">
+                        <h1 className="font-Red_Hat_Display font-bold text-white">QUICK LINKS</h1>
+
+                        <div className="link_list flex flex-col justify-evenly gap-3">
+                            <a href={'./aboutpage/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">About ATV</a>
+                            <a href={'https://www.pup.edu.ph/about/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">About PUP</a>
+                            <a href={'https://www.pup.edu.ph/ous/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">PUP OUS</a>
+                            <a href={'https://sis8.pup.edu.ph/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">PUP SIS</a>
+                            <a href={'https://emabini.pup.edu.ph/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">PUP eMabini</a>
+                        </div>
+                    </div>
+
+                    <div className="online_serv flex flex-col items-start gap-6">
+                        <h1 className="font-Red_Hat_Display font-bold text-white">ONLINE SERVICES</h1>
+
+                        <div className="link_list flex flex-col justify-evenly gap-3">
+                            <a href={'https://pupsinta.freshservice.com/support/home'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">PUP SINTA</a>
+                            <a href={'https://outlook.office.com/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">PUP WebMail</a>
+                            <a href={'http://www.pup.edu.ph/iapply/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">PUP iApply</a>
+                            <a href={'https://www.pup.edu.ph/jobpost/'} className="footer_links font-Red_Hat_Display font-medium text-white text-opacity-80">Jobs for PUPians</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="foot_logo flex flex-col items-center gap-6">
+                    <Link href={'./homepage/'}><img src="./images/logo.png" alt="ATV Logo" className="logo_footer"/></Link>
+
+                    <Link href={'./homepage/'}>
+                        <h1 className="font-Cinzel font-black text-white text-opacity-80 tracking-widest text-sm">ARCHITECH VAULT</h1>
+                    </Link>
+
+                    <p className="font-Red_Hat_Display text-white text-opacity-60 uppercase text-min">© 1998-2025 Polytechnic University of the Philippines</p>
+                </div>
+
+                <div className="foot_contact flex flex-col items-start gap-6">
+                    <h1 className="font-Red_Hat_Display font-bold text-white">CONTACT US</h1>
+
+                    <div className="link_list flex flex-col justify-evenly gap-3">
+                        <p className="font-Red_Hat_Display font-medium text-white text-opacity-80"><span className="font-Red_Hat_Display font-bold text-white text-opacity-80">Phone:</span> (+63 2) 5335-1PUP (5335-1787) or 5335-1777</p>
+                        <p className="font-Red_Hat_Display font-medium text-white text-opacity-80"><span className="font-Red_Hat_Display font-bold text-white text-opacity-80">Email:</span> inquire@pup.edu.ph</p>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Footer;
+
+// adminbutton.jsx
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+const AdminButton = ({ userInfo }) => {
+  const [isAdmin, setIsAdmin] = useState(userInfo?.is_admin);
+
+  useEffect(() => {
+    setIsAdmin(userInfo?.is_admin);
+  }, [userInfo]);
+
+  return (
+    isAdmin && (
+      <Link href={'./admin_approval'}
+        className="about_btns font-Montserrat font-bold uppercase">
+        Admin Approval
+      </Link>
+    )
+  );
+};
+
+export default AdminButton;
+
+// citationmodal.jsx
+import React, { useState, useEffect, useRef } from "react";
+
+const formatCitation = (data, style) => {
+    const { authors, title, publicationDate, pageCount, doi } = data;
+    //const citationDOI = doi || "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1936-4490.2001.tb00260.x";
+    const authorText = authors.map((a) => `${a.lastName}, ${a.firstName.charAt(0)}.`).join(", ");
+    const fullAuthorTextMLA = authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ");
+    const year = publicationDate ? new Date(publicationDate).getFullYear() : "n.d.";
+    const journal = "Polytechnic University of the Philippines";
+    const volume = "";
+    const issue = "";
+    const pages = `${pageCount}`;
+
+    switch (style) {
+        case "APA":
+          return `${authorText} (${year}). ${title}. ${journal}${volume ? `, ${volume}` : ""}${issue ? `(${issue})` : ""}, ${pages}`;
+        case "MLA":
+          return `${fullAuthorTextMLA}. “${title}.” ${journal}${
+            volume ? `, vol. ${volume}` : ""
+          }${issue ? `, no. ${issue}` : ""}, ${year}, pp. ${pages}`;
+        case "Chicago":
+          return `${fullAuthorTextMLA}. "${title}." ${journal}${
+            volume ? ` ${volume}` : ""
+          }${issue ? `, no. ${issue}` : ""} (${year}): ${pages}`;
+        default:
+          return "";
+      }      
+};
+
+const CitationModal = ({ isOpen, onClose, materialData }) => {
+    const [citationStyle, setCitationStyle] = useState("APA");
+    const [citation, setCitation] = useState("");
+    const [copied, setCopied] = useState(false);
+    const modalRef = useRef(null);
+
+    useEffect(() => {
+        if (materialData) {
+            const formatted = formatCitation(materialData, citationStyle);
+            setCitation(formatted);
+        }
+    }, [citationStyle, materialData]);
+
+    const handleClickOutside = (e) => {
+        if (modalRef.current && !modalRef.current.contains(e.target)) {
+            onClose();
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
+
+    
+    useEffect(() => {
+        setCopied(false);
+      }, [citationStyle]);
+      
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(citation);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+                ref={modalRef}
+                className="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg relative"
+            >
+                <button
+                    onClick={onClose}
+                    className="absolute top-2 right-3 text-gray-600 hover:text-black text-xl"
+                >
+                    ✕
+                </button>
+
+                {/* Radio Buttons Header */}
+                <div className="flex justify-between my-4 px-2">
+                    {["APA", "MLA", "Chicago"].map((style) => (
+                        <label key={style} className="flex items-center gap-1 text-sm font-medium">
+                            <input
+                                type="radio"
+                                value={style}
+                                checked={citationStyle === style}
+                                onChange={() => setCitationStyle(style)}
+                            />
+                            {style}
+                        </label>
+                    ))}
+                </div>
+
+                {/* Citation Text */}
+                <div className="bg-gray-100 p-4 rounded mb-4 max-h-60 overflow-y-auto overflow-x-hidden break-words">
+                    <p className="text-sm whitespace-pre-wrap break-words">{citation}</p>
+                </div>
+
+
+                {/* Copy Button */}
+                <button
+                    onClick={copyToClipboard}
+                    className={`w-full text-white px-4 py-2 rounded transition ${
+                        copied ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+                    }`}
+                >
+                    {copied ? "Copied Citation!" : "Copy Citation"}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default CitationModal;
+
+// home.jsx
+"use client";
+
+import {  Dropdown,  DropdownTrigger,  DropdownMenu,  DropdownSection,  DropdownItem} from "@nextui-org/dropdown";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+
+
+const Home = () => {
+    const router = useRouter();
+
+    const handleUserLogin = () => {
+        router.push('/UserManagement/Login.jsx')
+    }
+
+    return( 
+        <div className="home_cont min-h-screen w-full bg-white ">
+            <div className="home_content flex flex-col h-full">
+                <div className="header px-12 py-6 flex flex-row items-center justify-between">
+                    <div className="header_left">
+                        <img src="./images/logo.png" alt="ATV Logo" className="logo_img"/>
+                        <div className="logo_txt flex flex-col relative top-2">
+                            <a href="#">
+                                <h1 className="logo_h1 uppercase text-black">Architech Vault</h1>
+                            </a>
+                            <a href="#">
+                                <h2 className="logo_h2 uppercase text-black">Pup Open University</h2>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="header_right flex flex-row items-center gap-10">
+                        <a href="#about" className="about_btns font-Montserrat font-bold uppercase">About</a>
+                        <a href="https://www.pup.edu.ph/ous/" target="_blank" className="about_btns font-Montserrat font-bold uppercase">PUP OUS</a>
+                        <button onClick={handleUserLogin} className="login_btn px-5 py-2 font-Montserrat font-bold">LOGIN</button>
+                    </div>
+                </div>
+
+                <div className="body mt-10 mb-40 flex items-center justify-between bg-background">
+                    <div className="body_left">
+                        <img src="./images/materials/pylon2022.png" alt="PUP Pylon Image" className="pylon_img"/>
+                    </div>
+
+                    <div className="body_right p-8 flex flex-col align-left justify-around gap-28 w-min">
+                        <h1 className="right_txt font-Cinzel font-black uppercase text-4xl text-white opacity-80">Open Minds with Open Access</h1>
+
+                        <div className="search_bar_cont">
+                            <div className="search_bar_content flex flex-row">
+                                <div className="dropdown">
+                                    <Dropdown>
+                                        <DropdownTrigger>
+                                            <div className="drop_btn flex flex-row items-center gap-5 py-3 px-5 border cursor-pointer">
+                                                <Image src="/images/materials/SVGs/down.svg" alt="dropdownBtn" width={30} height={30} />
+                                                <p className="drop_btnTxt font-Montserrat text-black">All Fields</p>
+                                            </div>
+                                        </DropdownTrigger>
+                                        
+                                        <DropdownMenu className="drop_menu" aria-label="Filter Options">
+                                            {/* <DropdownItem key="keywords">Keywords</DropdownItem>
+                                            <DropdownItem key="author">Author</DropdownItem>
+                                            <DropdownItem key="subject">Subject</DropdownItem>
+                                            <DropdownItem key="access">Access Type</DropdownItem>
+                                            <DropdownItem key="language">Language</DropdownItem> */}
+                                        </DropdownMenu>
+                                    </Dropdown>
+                                </div>
+                                <div className="search_field">
+                                    <input type="text" placeholder="What are you looking for?..." className="search_field_bar h-14 p-5"/>
+                                </div>
+                                <div className="search_btn">
+                                    <button className="searchBtn">
+                                        <Image src="/images/materials/SVGs/search.svg" alt="searchBtn" width={30} height={30} />
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <div className="bottom_txt font-Red_Hat_Display text-white w-11/12 text-justify">
+                            <p>The Research Institute for Science and Technology (RIST) integrates holistic programs to advance research in the life sciences, physical sciences, mathematics, engineering, computing and information sciences.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Home;
+
+// bookmarkspanel.jsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+
+const Bookmarks = () => {
+  const [bookmarks, setBookmarks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+  
+
+  useEffect(() => {
+    const fetchUserAndBookmarks = async () => {
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError) throw authError;
+
+        if (!user) {
+          console.warn("User not authenticated");
+          setLoading(false);
+          return;
+        }
+
+        setUserId(user.id);
+
+        const { data: bookmarkData, error: bookmarkError } = await supabase
+          .from("Bookmarks")
+          .select("*")
+          .eq("user_id", user.id);
+
+        if (bookmarkError) throw bookmarkError;
+
+        setBookmarks(bookmarkData || []);
+      } catch (error) {
+        console.error("Error fetching bookmarks:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAndBookmarks();
+  }, []);
+
+  const formatAuthors = (authorsText) => {
+    try {
+      const authorsArray = JSON.parse(authorsText);
+      if (!Array.isArray(authorsArray)) return "Unknown Author";
+
+      return authorsArray
+        .map(
+          (author) =>
+            `${author.firstName?.trim() || ""} ${author.lastName?.trim() || ""}`
+        )
+        .join(", ");
+    } catch {
+      return "Unknown Author";
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return isNaN(date) ? "Unknown Date" : date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  return (
+    <div className="bookmarks_panel px-10 py-6">
+      <h2 className="font-Red_Hat_Display font-bold text-lg mb-4 text-white">
+        Your Bookmarked Items
+      </h2>
+
+      {loading ? (
+        <p className="text-gray-400">Loading bookmarks...</p>
+      ) : bookmarks.length === 0 ? (
+        <p className="text-gray-400">You have no bookmarks yet.</p>
+      ) : (
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {bookmarks.map((bookmark, index) => (
+            <li
+              key={index}
+              className="bookmark_card p-4 rounded-xl bg-white bg-opacity-90 shadow-md"
+            >
+              <h3 className="font-bold text-md mb-1 text-black">
+                {bookmark.title}
+              </h3>
+              <p className="text-xs text-gray-500">
+                Author/s: {formatAuthors(bookmark.authors)}
+              </p>
+              <p className="text-xs text-gray-500">
+                Published: {formatDate(bookmark.publicationDate)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export default Bookmarks;
+
+// authorcontactClient.jsx
+"use client";
+
+import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
+
+export default function ContactAuthorClient() {
+  const searchParams = useSearchParams();
+  const authorEmail = searchParams.get("author");
+  const articleTitle = searchParams.get("title");
+
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      toast.error("Please log in to send a request.");
+      setSubmitting(false);
+      return;
+    }
+
+    const { error } = await supabase.from("ContactRequests").insert([
+      {
+        user_id: user.id,
+        author_email: authorEmail,
+        article_title: articleTitle,
+        message,
+      },
+    ]);
+
+    if (error) {
+      toast.error("Failed to send message.");
+      console.error(error);
+      setSubmitting(false);
+      return;
+    }
+
+    toast.success("✅ Message sent to author! Redirecting...", {
+      duration: 3000,
+    });
+
+    setMessage("");
+    setSubmitting(false);
+
+    setTimeout(() => {
+      window.location.href = `/article_journalpage?title=${encodeURIComponent(
+        articleTitle
+      )}`;
+    }, 3000);
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-100 to-white font-redhat">
+      <Header />
+      <main className="flex-1 px-4 py-12 flex justify-center items-center">
+        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl px-8 py-10 sm:p-12 transition-all duration-300">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+            📩 Contact Author
+          </h1>
+          <p className="text-gray-600 mb-6 text-sm leading-relaxed">
+            You are reaching out to{" "}
+            <span className="font-semibold text-red-700">{authorEmail}</span>{" "}
+            regarding the article:{" "}
+            <span className="italic text-gray-800">{articleTitle}</span>.
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Your Message
+              </label>
+              <textarea
+                id="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                required
+                className="mt-2 w-full border border-gray-300 focus:ring-red-600 focus:border-red-600 rounded-xl p-4 h-40 resize-none shadow-sm transition duration-200"
+                placeholder="Write your message to the author here..."
+              ></textarea>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={submitting}
+                className={`${
+                  submitting
+                    ? "bg-red-300 cursor-not-allowed"
+                    : "bg-red-700 hover:bg-red-800"
+                } text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200`}
+              >
+                {submitting ? "Sending..." : "Send Request"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+// authorcontact.jsx
+'use client';
+
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+
+const ContactAuthorClient = dynamic(() => import("../authorcontactClient/client"), {
+  ssr: false, // Important: disables server-side rendering so useSearchParams can be used safely
+});
+
+
+export default function ContactAuthorPage() {
+  return (
+    <Suspense fallback={<div>Loading article...</div>}>
+      <ContactAuthorClient />
+    </Suspense>
+  );
+}
+
+
+// article_journalpage.jsx
+'use client';
+
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+
+const ArticleJournalPageClient = dynamic(() => import("../article_journalClient/client"), {
+  ssr: false, // Important: disables server-side rendering so useSearchParams can be used safely
+});
+
+
+export default function ArticleJournalPage() {
+  return (
+    <Suspense fallback={<div>Loading article...</div>}>
+      <ArticleJournalPageClient />
+    </Suspense>
+  );
+}
+
+// author_journalClient.jsx
+"use client";
+
+import { useEffect, useState } from "react";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import Image from "next/image";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faFileLines as faFileLinesRegular, faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons";
+import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
+import CitationModal from "../components/CitationModal"; //Citation
+
+const ArticleJournalPageClient = () => {
+  const [materialData, setMaterialData] = useState(null); // Citation
+  const [isCitationModalOpen, setIsCitationModalOpen] = useState(false); // Citation
+  const searchParams = useSearchParams();
+  const title = searchParams.get("title");
+  
+  const [article, setArticle] = useState(null);
+  const [similarArticles, setSimilarArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showContributorProfile, setShowContributorProfile] = useState(false);
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  const [authorDetails, setAuthorDetails] = useState({
+    fullname: "",
+    course: "",
+    email: "",
+    mobile: "",
+    avatar: "/avatar.png",
+  });
+  const [contributor, setContributor] = useState({
+    fullname: "",
+    course: "",
+    email: "",
+    mobile: "",
+    avatar: "/avatar.png",
+  });
+
+  useEffect(() => {
+    if (title) {
+      fetchArticle(title);
+      fetchSimilarArticles();
+      checkIfBookmarked(title);
+      setShowContributorProfile(false);
+    }
+  }, [title]);
+
+  useEffect(() => {
+    if (!article?.id) return;
+
+    const channel = supabase
+      .channel("access-count")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "Materials",
+          filter: `id=eq.${article.id}`,
+        },
+        (payload) => {
+          setArticle((prev) => ({
+            ...prev,
+            accessCount: payload.new.accessCount,
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [article?.id]);
+
+  // Function to fetch contributor user from Users table by user_id UUID
+  async function fetchContributorById(userId) {
+    if (!userId) return;
+
+    const { data, error } = await supabase
+      .from("Users")
+      .select("name, course, email, mobile_number")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching contributor:", error);
+      return;
+    }
+    if (data) {
+      setContributor({
+        fullname: data.name || "",
+        course: data.course || "",
+        email: data.email || "",
+        mobile: data.mobile_number || "",
+        avatar: "/avatar.png",
+      });
+    }
+  }
+
+  async function fetchArticle(articleTitle) {
+    const { data: article, error } = await supabase
+      .from("Materials")
+      .select("*")
+      .eq("title", articleTitle)
+      .single();
+
+    if (error || !article) {
+      console.error("Error fetching article:", error);
+      setLoading(false);
+      return;
+    }
+
+    // Increment access count
+    const updatedCount = (article.accessCount || 0) + 1;
+
+    await supabase
+      .from("Materials")
+      .update({ accessCount: updatedCount })
+      .eq("id", article.id);
+
+    const { data: updatedArticle } = await supabase
+      .from("Materials")
+      .select("*")
+      .eq("id", article.id)
+      .single();
+
+    setArticle(updatedArticle);
+
+    // Fetch author details from "Users" table if user_id exists
+    if (updatedArticle.user_id) {
+      const { data: user, error: userError } = await supabase
+        .from("Users")
+        .select("name, course, email, mobile_number")
+        .eq("id", updatedArticle.user_id)
+        .single();
+
+      if (userError) {
+        console.error("Error fetching author details:", userError);
+      } else if (user) {
+        setAuthorDetails({
+          fullname: user.name || "",
+          course: user.course || "",
+          email: user.email || "",
+          mobile: user.mobile_number || "",
+          avatar: "/avatar.png",
+        });
+      } else {
+        setAuthorDetails({
+          fullname: "",
+          course: "",
+          email: "",
+          mobile: "",
+          avatar: "/avatar.png",
+        });
+      }
+    } else {
+      setAuthorDetails({
+        fullname: "",
+        course: "",
+        email: "",
+        mobile: "",
+        avatar: "/avatar.png",
+      });
+    }
+
+    setLoading(false);
+
+    // Fetch contributor profile by user_id UUID from article record
+    if (updatedArticle.user_id) {
+      fetchContributorById(updatedArticle.user_id);
+    } else {
+      // fallback reset contributor to empty if no user_id
+      setContributor({
+        fullname: "",
+        course: "",
+        email: "",
+        mobile: "",
+        avatar: "/avatar.png",
+      });
+    }
+  }
+
+  async function fetchSimilarArticles() {
+    const { data } = await supabase
+      .from("Materials")
+      .select("id, title, authors, publicationDate")
+      .limit(5);
+
+    if (data) setSimilarArticles(data);
+  }
+
+  async function checkIfBookmarked(articleTitle) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setIsBookmarked(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("Bookmarks")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("title", articleTitle)
+      .single();
+
+    setIsBookmarked(!error && !!data);
+  }
+
+  const handleBookmark = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error("Please sign in to save bookmarks.");
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        const { error } = await supabase
+          .from("Bookmarks")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("title", article.title);
+
+        if (error) throw error;
+        setIsBookmarked(false);
+        toast.success("Removed bookmark.");
+      } else {
+        const { error } = await supabase.from("Bookmarks").insert([
+          {
+            user_id: user.id,
+            title: article.title,
+            abstract: article.abstract || null,
+            authors: article.authors || null,
+            publicationDate: article.publicationDate || null,
+          },
+        ]);
+
+        if (error) throw error;
+        setIsBookmarked(true);
+        toast.success("Bookmarked successfully.");
+      }
+    } catch (err) {
+      console.error("Bookmarking error:", err.message);
+      toast.error("Failed to update bookmark.");
+    }
+  };
+
+  const handleContactAuthor = () => setShowContactDetails(true);
+
+  const handleAuthorClick = () => setShowContactDetails(true);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-xl font-Red_Hat_Display">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="flex flex-col min-h-screen font-Red_Hat_Display">
+        <Header />
+        <main className="flex-1 flex justify-center items-center p-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-4">No article found</h1>
+            <p className="text-gray-600">We couldn't find an article matching that title.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen font-Red_Hat_Display bg-gray-50">
+      <Header />
+      <main className="flex-1 p-8">
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* Sidebar */}
+          <aside className="lg:w-1/4">
+            {showContributorProfile ? (
+              <div className="bg-[#5c0a0a] p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex flex-col items-center gap-4">
+                  <Image src={contributor.avatar} alt={contributor.fullname || "Contributor"} width={150} height={150} className="rounded-full shadow-md" />
+                  <h2 className="text-2xl font-bold">{contributor.fullname || "Unknown"}</h2>
+                  <p className="text-sm font-semibold">{contributor.course || ""}</p>
+                  <div className="flex flex-col gap-2 mt-4 w-full text-center text-white text-sm">
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '400px' }}>{contributor.email || ""}</div>
+                    <div>{contributor.mobile || ""}</div>
+                  </div>
+                  <button
+                    className="mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm hover:bg-gray-400"
+                    onClick={() => setShowContributorProfile(false)}
+                  >
+                    Close Contributor Profile
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-[#5c0a0a] p-6 rounded-2xl text-white">
+                  <h2 className="text-2xl font-bold mb-6 tracking-widest whitespace-nowrap">
+                    Similar Articles
+                  </h2>
+                  <div className="space-y-6 text-sm">
+                    {similarArticles.map((item) => (
+                      <div key={item.id} className="pb-4 border-b border-white/30 last:border-0">
+                        <Link
+                          href={`/article_journalpage?title=${encodeURIComponent(item.title)}`}
+                          className="text-white underline text-xl font-bold block mb-2"
+                        >
+                          {item.title}
+                        </Link>
+                        <div className="flex flex-wrap gap-2 text-xs text-white">
+                          <span>
+                            <strong>Author:</strong>{" "}
+                            {Array.isArray(item.authors)
+                              ? item.authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")
+                              : "Unknown"}
+                          </span>
+                          <span>•</span>
+                          <span>
+                            <strong>Published:</strong>{" "}
+                            {item.publicationDate ? new Date(item.publicationDate).getFullYear() : "Unknown"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-center">
+                  <Image
+                    src="/images/poster.jpg"
+                    alt="Material Poster"
+                    width={400}
+                    height={500}
+                    className="rounded-xl shadow-lg"
+                  />
+                </div>
+              </>
+            )}
+          </aside>
+
+          {/* Main Content */}
+          <section className="flex-1">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">{article.title}</h1>
+            
+            <div className="text-sm text-gray-500 mb-6">Accessed {article.accessCount ?? 0} times</div>
+            <div className="flex items-center gap-4 mb-8">
+              <span
+                className="text-sm font-bold text-gray-800 cursor-pointer hover:underline"
+                onClick={handleAuthorClick}
+                title="Click to view author contact details"
+              >
+                {Array.isArray(article.authors)
+                  ? article.authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ")
+                  : "Unknown Author"}
+              </span>
+
+              <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
+                <Link
+                  href={`/authorcontact?author=${encodeURIComponent(
+                    Array.isArray(article.authors) && article.authors[0]?.email
+                      ? article.authors[0].email
+                      : "unknown@example.com"
+                  )}&title=${encodeURIComponent(article.title)}`}
+                  className="flex items-center gap-2"
+                  onClick={() => setShowContributorProfile(false)}
+                >
+                  <FontAwesomeIcon icon={faEnvelope} className="text-white" />
+                  Contact Author
+                </Link>
+              </button>
+              <button
+                className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2"
+                onClick={() => setShowContributorProfile(true)}
+              >
+                Contributor Profile
+              </button>
+            </div>
+
+            <div className="flex items-center gap-8 mb-10 text-gray-600 text-sm font-medium">
+            <button // Citation
+              type="button"
+              onClick={() => {
+                setMaterialData(article); 
+                setIsCitationModalOpen(true);
+              }}
+              className="hover:underline flex items-center gap-2 text-blue-600">
+              <FontAwesomeIcon icon={faFileLinesRegular} /> Citation
+            </button>
+
+            <CitationModal // Citation
+              isOpen={isCitationModalOpen}
+              onClose={() => setIsCitationModalOpen(false)}
+              materialData={materialData}
+            /> 
+
+              <button
+                onClick={async () => {
+                  if (!article.pdf_path) {
+                    alert("No PDF available for this article.");
+                    return;
+                  }
+
+                  const { data, error } = await supabase
+                    .storage
+                    .from("pdfs") 
+                    .createSignedUrl(article.pdf_path, 60); 
+
+                  if (error) {
+                    console.error("Error generating download link:", error);
+                    alert("Failed to download file.");
+                    return;
+                  }
+
+                  // Trigger download
+                  const link = document.createElement("a");
+                  link.href = data.signedUrl;
+                  link.download = article.title + ".pdf";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="hover:underline flex items-center gap-2 text-blue-600"
+              >
+                <FontAwesomeIcon icon={faDownload} /> Download PDF
+              </button>
+
+              <button onClick={handleBookmark} className="hover:underline flex items-center gap-2">
+                <FontAwesomeIcon icon={isBookmarked ? faBookmarkSolid : faBookmarkRegular} />
+                {isBookmarked ? "Bookmarked" : "Bookmark"}
+              </button>
+            </div>
+
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-2">Abstract</h2>
+              <div className="h-1 w-600 bg-gray-300 mb-4"></div>
+              <p className="text-gray-700 leading-relaxed text-base whitespace-pre-wrap text-justify">
+                {article.abstract || "No abstract available."}
+              </p>
+            </div>
+
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-2">Introduction</h2>
+              <div className="h-1 w-600 bg-gray-300 mb-4"></div>
+              <p className="text-gray-700 leading-relaxed text-base whitespace-pre-wrap text-justify">
+                {article.introduction || "No introduction available."}
+              </p>
+            </div>
+
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold mb-2">References</h2>
+              <div className="h-1 w-600 bg-gray-300 mb-4"></div>
+              {article.references && article.url ? (() => {
+                let references = [];
+                let urls = [];
+
+                try {
+                  references = JSON.parse(article.references || "[]");
+                  urls = JSON.parse(article.url || "[]");
+                } catch (e) {
+                  console.error("Failed to parse references or URLs:", e.message);
+                }
+
+
+                return Array.isArray(references) && references.length > 0 ? (
+                  <ul className="space-y-6">
+                    {references.map((ref, index) => (
+                      <li key={index} className="text-base text-gray-700 text-justify leading-relaxed">
+                        <div className="pl-6" style={{ textIndent: "-1.5rem" }}>
+                          <span className="font-bold mr-2">{index + 1}.</span>
+                          {ref}
+                        </div>
+
+                        {urls[index] ? (
+                          <div className="pl-6 mt-1">
+                            <a
+                              href={urls[index]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#025E8D] text-white rounded text-l font-medium hover:bg-[#014c78] transition"
+                            >
+                              Google Scholar
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 3a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 11-2 0V5.414l-9.293 9.293a1 1 0 01-1.414-1.414L14.586 4H11a1 1 0 01-1-1z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </a>
+                          </div>
+                        ) : (
+                          <div className="pl-6 mt-1 text-sm text-gray-500 italic">No URL available</div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-700">No references provided.</p>
+                );
+              })() : (
+                <p className="text-gray-700">No references or URLs available.</p>
+              )}
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default ArticleJournalPageClient;
+
+
+// admin approval .jsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import Header from "../header/page";
+import Footer from "../footer/page";
+import "@/app/globals.css";
+
+
+const AdminApprovalPage = () => {
+  const [materials, setMaterials] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    fetchMaterials();
+  }, []);
+
+  const fetchMaterials = async () => {
+    const { data, error } = await supabase.from("Materials").select("*, Users(name)");
+    if (error) {
+      console.error("Error fetching materials:", error);
+    } else {
+      setMaterials(data);
+    }
+  };
+
+  const toggleApproval = async (id, currentStatus) => {
+  const { error } = await supabase
+    .from("Materials")
+    .update({ is_approved: !currentStatus })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error updating approval status:", error);
+  } else {
+    fetchMaterials(); // Refresh the list
+  }
+  };
+
+
+  const filteredMaterials = materials
+  .filter((material) => {
+    const matchesSearch = (material.title || "")
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "approved" && material.is_approved === true) ||
+      (filter === "unapproved" && material.is_approved !== true);
+    
+    return matchesSearch && matchesFilter;
+  })
+  .sort((a, b) => a.title.localeCompare(b.title)); // Sort alphabetically
+
+
+  return (
+    <div className="p-6">
+    <Header/>
+      <h1 className="text-2xl font-bold mb-4">Admin Approval Panel</h1>
+
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Search materials by name..."
+          className="border p-2 rounded w-full sm:w-1/3"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+
+        <select
+          className="border p-2 rounded w-full sm:w-1/4"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="all">All</option>
+          <option value="approved">Approved</option>
+          <option value="unapproved">Unapproved</option>
+        </select>
+      </div>
+      <div className="py-6">
+        <table className="w-full border-collapse shadow-lg rounded-lg overflow-hidden">
+            <thead>
+            <tr className="bg-maroon text-white">
+                <th className="px-6 py-3 text-left border-b border-gray-300">Name</th>
+                <th className="px-6 py-3 text-left border-b border-gray-300">Type</th>
+                <th className="px-6 py-3 text-left border-b border-gray-300">Uploader</th>
+                <th className="px-6 py-3 text-left border-b border-gray-300">Approval Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            {filteredMaterials.map((material) => (
+                <tr key={material.id} className="border-t bg-white hover:bg-gray-100 transition">
+                <td className="px-6 py-3">{material.title}</td>
+                <td className="px-6 py-3">{material.materialType || "None"}</td>
+                <td className="px-6 py-3">{material.Users?.name || "Unknown"}</td>
+                <td className="px-6 py-3">
+                    <button
+                    className={`px-3 py-1 rounded-lg font-semibold transition ${
+                        material.is_approved ? "bg-gold text-black" : "bg-gray-400 text-white"
+                    }`}
+                    onClick={() => toggleApproval(material.id, material.is_approved)}
+                    >
+                    {material.is_approved ? "Unapprove" : "Approve"}
+                    </button>
+                </td>
+                </tr>
+            ))}
+            </tbody>
+        </table>
+        </div>
+      <Footer/>
+    </div>
+  );
+};
+
+export default AdminApprovalPage;
+
+
+// aboutpage.jsx
+"use client";
+
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem } from "@nextui-org/dropdown";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "../header/page";
+import Footer from "../footer/page";
+
+const About = () => {
+    return (
+        <div className="about_cont">
+            <div className="about_content">
+                <Header />
+
+                <div className="banner_cont">
+                    <img src="./images/materials/mainCampus.jpg" alt="PUP Mural" className="pupMain_img" />
+
+                    <div className="banner_content p-16 flex flex-col items-left justify-around gap-28 w-screen">
+                        <h1 className="right_txt font-Cinzel font-black uppercase text-lg text-white opacity-80">About</h1>
+                    </div>
+                </div>
+
+                <div className="about_pup">
+                    <div className="about_pupTxt">
+                        <p className="font-Red_Hat_Display text-sm text-black">
+                            The <span className="font-black">Polytechnic University of the Philippines (PUP)</span> is a premier state university committed to providing quality, responsive, and accessible education to the Filipino youth. With a rich history spanning over a century, PUP is a leading institution in delivering higher education programs in the fields of commerce, business administration, technology, social sciences, and applied arts.
+                            <br /> <br />
+                            Governed by the Board of Regents and guided by its vision of fostering innovation and academic excellence, PUP nurtures students to become creative, self-reliant, and socially responsible individuals. The University stands as a beacon for economically challenged students, offering them opportunities to pursue their dreams and contribute meaningfully to nation-building.
+                            <br /> <br />
+                            In line with its commitment to research and knowledge-sharing, PUP introduces <span className="font-black">ArchiTech Vault</span>. A dedicated research database designed to centralize, organize, and showcase the intellectual and scholarly contributions of the University’s students, faculty, and researchers. ArchiTech Vault serves as a digital archive that enhances accessibility to academic materials, fosters collaboration, and strengthens PUP’s role as a hub for applied research and innovation.
+                            <br /> <br />
+                            With over 20 campuses, cutting-edge research initiatives, and a diverse student population that includes international scholars, PUP continues to uphold its mission of harnessing the nation’s human resource potential through world-class instruction, advanced studies, and progressive leadership. Through ArchiTech Vault, PUP reaffirms its dedication to academic excellence, empowering future generations with knowledge and research-driven solutions.
+                            <br /> <br />
+                        </p>
+                    </div>
+                </div>
+
+                <Footer />
+            </div>
+        </div>
+    )
+}
+
+export default About;

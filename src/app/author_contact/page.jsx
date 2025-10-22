@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
 
-const ContactAuthorClient = dynamic(() => import("../authorcontactClient/client"), {
+const ContactAuthorPageClient = dynamic(() => import("./ContactAuthorClient"), {
   ssr: false, // Important: disables server-side rendering so useSearchParams can be used safely
 });
 
@@ -12,7 +12,7 @@ const ContactAuthorClient = dynamic(() => import("../authorcontactClient/client"
 export default function ContactAuthorPage() {
   return (
     <Suspense fallback={<div>Loading article...</div>}>
-      <ContactAuthorClient />
+      <ContactAuthorPageClient />
     </Suspense>
   );
 }

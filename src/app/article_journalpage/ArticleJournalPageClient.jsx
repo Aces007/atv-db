@@ -368,7 +368,7 @@ const ArticleJournalPageClient = () => {
 
               <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
                 <Link
-                  href={`/authorcontact?author=${encodeURIComponent(
+                  href={`/author_contact?author=${encodeURIComponent(
                     Array.isArray(article.authors) && article.authors[0]?.email
                       ? article.authors[0].email
                       : "unknown@example.com"
