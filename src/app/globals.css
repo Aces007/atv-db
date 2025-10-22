@@ -116,6 +116,7 @@ body {
       width: 60px;
       height: 60px;
       border-color: var(--cc-profile-btn);
+      border-radius: 60px;
     }
 
     .profile_drop_cont {
