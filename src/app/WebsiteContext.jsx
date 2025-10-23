@@ -61,7 +61,6 @@ export const WebProvider = ({ children }) => {
             setUser(data.user);
             console.log("User logged in:", data.user);
 
-            // ✅ Immediately fetch updated user info
             await fetchUserInfo(data.user.id);
 
             alert('Login Process Successful');
@@ -99,6 +98,27 @@ export const WebProvider = ({ children }) => {
     };
 
 
+    const handleUploadMaterial = async (materialData) => {
+        setLoading(true);
+        
+        try {
+            const {data, error} = await supabase
+            .from("Materials")
+            .insert([materialData]);
+            
+            if (error) throw error;
+
+            console.log("Material uploaded successfully! Please wait for approval for it be displayed.", data);
+            alert("Material uploaded successfully!");
+        } catch (error)  {
+            console.error("Error uploading material:", error.message);
+            alert("Failed to upload material. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+
     const updateUserInfo = async (userId, updatedData) => {
         if (!userId) {
             console.error("User ID is missing.");
@@ -106,12 +126,13 @@ export const WebProvider = ({ children }) => {
         }
 
         const payload = {
-            nickname: updatedData.nickname,
-            gender: updatedData.gender,
-            student_number: updatedData.studentNumber,
-            personal_email: updatedData.personalEmail,
-            mobile_number: updatedData.mobileNumber,
-            course: updatedData.course,
+            nickname: updatedData.nickname ?? null,
+            gender: updatedData.gender ?? null,
+            student_number: updatedData.student_number ?? null,
+            personal_email: updatedData.personal_email ?? null,
+            mobile_number: updatedData.mobile_number ?? null,
+            course: updatedData.course ?? null,
+            profile_url: updatedData.profile_url ?? null,   
         }
 
         try {
@@ -128,27 +149,6 @@ export const WebProvider = ({ children }) => {
         } catch (error) {
             console.error("Error updating user info:", error.message);
             alert("Failed to update profile. Please try again.");
-        }
-    };
-    
-
-    const handleUploadMaterial = async (materialData) => {
-        setLoading(true);
-
-        try {
-            const {data, error} = await supabase
-                .from("Materials")
-                .insert([materialData]);
-
-            if (error) throw error;
-
-            console.log("Material uploaded successfully! Please wait for approval for it be displayed.", data);
-            alert("Material uploaded successfully!");
-        } catch (error)  {
-            console.error("Error uploading material:", error.message);
-            alert("Failed to upload material. Please try again.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -171,19 +171,8 @@ export const WebProvider = ({ children }) => {
             console.log("Fetched User Data:", data);
     
             setUserInfo(data);
-            return {
-                full_name: data.name,
-                nickname: data.nickname,
-                gender: data.gender,
-                userEmail: data.email,
-                userBirthdate: data.birthdate,
-                userAge: data.age,
-                userCourse: data.course,
-                userMobileNumber: data.mobile_number,
-                userStudentNumber: data.student_number,
-                userPersonalEmail: data.personal_email,
-                profile_url: data.profile_url, 
-            };
+            return data;
+            
         } catch (error) {
             console.error("Error fetching user info:", error.message);
         }

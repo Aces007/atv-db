@@ -19,36 +19,7 @@ import { useWebsiteContext } from "../WebsiteContext";
 const Profile = () => {
     const [selectedSection, setSelectedSection] = useState('PersonalInfo');
     const { fetchUserInfo, user, userInfo } = useWebsiteContext();
-    const [name, setName] = useState(null);
-    const [email, setEmail] = useState(null);
-    const [birthdate, setBirthdate] = useState(null);
-    const [age, setAge] = useState(null);
-    const [studentNumber, setStudentNumber] = useState("");
 
-    useEffect(() => {
-        if (!user || !user.id) {
-            console.warn("User is not available yet.");
-            return;
-        }
-
-        console.log('userId in UserProfile:', user.id); 
-
-        const getUserData = async () => {
-            const userData = await fetchUserInfo(user.id);
-            if (!userData) {
-                console.error("User data not found.");
-                return;
-            }
-
-            setName(userData.full_name);
-            setEmail(userData.userEmail);
-            setBirthdate(userData.userBirthdate);
-            setAge(userData.userAge);
-            setStudentNumber(userData.userStudentNumber)
-        };
-
-        getUserData();
-    }, [user]);
 
     return (
         <div className="profile_cont">
@@ -60,11 +31,11 @@ const Profile = () => {
                         <h1 className="font-Red_Hat_Display uppercase font-extrabold text-sm">Your Account</h1>
 
                         <div className="user_basic flex flex-row gap-4">
-                            <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} style={{ width: "60px", height: "60px", borderRadius: "60px" }} />
+                            <Image src={userInfo?.profile_url || "/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} style={{ width: "60px", height: "60px", borderRadius: "60px" }} />
 
                             <div className="flex flex-col justify-center items-start gap-2">
-                                <h1 className="font-Red_Hat_Display font-bold text-min">{name}</h1>
-                                <h1 className="font-Red_Hat_Display text-min">{studentNumber}</h1>
+                                <h1 className="font-Red_Hat_Display font-bold text-min">{userInfo?.name}</h1>
+                                <h1 className="font-Red_Hat_Display text-min">{userInfo?.student_number}</h1>
                             </div>
                         </div>
 

@@ -12,89 +12,80 @@ import { supabase } from "@/lib/supabaseClient";
 
 const PersonalInfo = () => {
     const { fetchUserInfo, user, updateUserInfo, userInfo } = useWebsiteContext();
-    const [name, setName] = useState(null);
-    const [email, setEmail] = useState(null);
-    const [birthdate, setBirthdate] = useState(null);
-    const [age, setAge] = useState(null);
     
     // Consolidate personal information into a single object state
     const [personalInfo, setPersonalInfo] = useState({
         nickname: "",
         gender: "",
-        studentNumber: "",
-        personalEmail: "",
-        mobileNumber: "",
-        course: ""
+        student_number: "",
+        personal_email: "",
+        mobile_number: "",
+        course: "",
+        profile_url: "",
+    });
+    
+    const [editInfo, setEditInfo] = useState({
+        nickname: "",
+        gender: "",
+        student_number: "",
+        personal_email: "",
+        mobile_number: "",
+        course: "",
+        profile_url: "",
     });
 
     useEffect(() => {
-        if (!user || !user.id) {
-            console.warn("User is not available yet.");
-            return;
+        if (!user?.id) return;
+
+        async function loadUserInfo() {
+            await fetchUserInfo(user.id)
         }
 
-        console.log('userId in UserProfile:', user.id);
-
-        const getUserData = async () => {
-            const userData = await fetchUserInfo(user.id);
-            if (!userData) {
-                console.error("User data not found.");
-                return;
-            }
-
-            setName(userData.full_name);
-            setEmail(userData.userEmail);
-            setBirthdate(userData.userBirthdate);
-            setAge(userData.userAge);
-            
-            setPersonalInfo({
-                nickname: userData.nickname || "",
-                gender: userData.gender || "",
-                studentNumber: userData.userStudentNumber || "",
-                personalEmail: userData.userPersonalEmail || "",
-                mobileNumber: userData.userMobileNumber || "",
-                course: userData.userCourse || "",
-                profileUrl: userData.profile_url || ""
-            });
-        };
-
-        getUserData();
+        loadUserInfo();
     }, [user]);
+    
+    useEffect(() => {
+        if (userInfo) {
+            setPersonalInfo({
+                nickname: userInfo.nickname ?? "",
+                gender: userInfo.gender ?? "",
+                student_number: userInfo.student_number ?? "",
+                personal_email: userInfo.personal_email ?? "",
+                mobile_number: userInfo.mobile_number ?? "",
+                course: userInfo.course ?? "",
+                profile_url: userInfo.profile_url ?? "",
+            });
+        }
+    }, [userInfo]);
 
     const handleUpdate = async () => {
-        if (!user || !user.id) {
-            alert("User not found!");
-            return;
-        }
+        if (!user?.id) return alert("User not found!");
 
         try {
-            await updateUserInfo(user.id, personalInfo);
-            
-            // Refresh local state with updated info
-            const refreshedData = await fetchUserInfo(user.id);
+            {/* entries create new array with key-value (dataVariable: dataValue) then
+                filter removes the empty values which creates a new object of new entries. */}
+            const updatedData = Object.fromEntries(
+                Object.entries(editInfo).filter(([_, value]) => value !== "")
+            )
 
-            if (refreshedData) {
-                setPersonalInfo({
-                nickname: refreshedData.nickname || "",
-                gender: refreshedData.gender || "",
-                studentNumber: refreshedData.userStudentNumber || "",
-                personalEmail: refreshedData.userPersonalEmail || "",
-                mobileNumber: refreshedData.userMobileNumber || "",
-                course: refreshedData.userCourse || "",
-                profileUrl: userData.profile_url || ""
+            {/* Compares the old entries from personalInfo variable with 
+                the new ones in updatedData to add the new values */}
+            const finalUpdate = { ...personalInfo, ...updatedData };
+
+            await updateUserInfo(user.id, finalUpdate);
+            await fetchUserInfo(user.id);
+            {/* Clears inputs after value update */}
+            setEditInfo({
+                nickname: "",
+                gender: "",
+                student_number: "",
+                personal_email: "",
+                mobile_number: "",
+                course: "",
+                profile_url: "",
             });
-            alert("Information updated successfully!");
 
-            } else {
-                setPersonalInfo({
-                    nickname: "",
-                    gender: "",
-                    studentNumber: "",
-                    personalEmail: "",
-                    mobileNumber: "",
-                    course: ""
-                });
-            }
+            alert("Information updated successfully!");
         } catch (error) {
             console.error("Error updating user info:", error);
         }
@@ -102,7 +93,7 @@ const PersonalInfo = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setPersonalInfo((prevInfo) => ({
+        setEditInfo((prevInfo) => ({
             ...prevInfo,
             [name]: value
         }));
@@ -116,7 +107,6 @@ const PersonalInfo = () => {
                 return;
             }
 
-            // Validate file type
             const fileExt = file.name.split('.').pop().toLowerCase();
             const validTypes = ['jpg', 'jpeg', 'png', 'gif'];
             if (!validTypes.includes(fileExt)) {
@@ -159,9 +149,6 @@ const PersonalInfo = () => {
 
             await fetchUserInfo(user.id);
 
-            setPersonalInfo(prev => ({ ...prev, profileUrl: publicUrl }));
-
-
             alert("Profile picture updated successfully!");
         } catch (error) {
             console.error("Unexpected error:", error);
@@ -176,7 +163,7 @@ const PersonalInfo = () => {
             <div className="info_content">
                 <div className="preview_content">
                     <div className="profPic_cont">
-                        <Image src={userInfo?.profile_url ||"/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
+                        <Image src={userInfo?.profile_url || "/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
 
                         <input type="file" accept="image/*" id="profileUpload" style={{ display: "none" }} onChange={handleUploadProfile}/>
                         <button className="uploadBtn font-Montserrat text-min" onClick={() => document.getElementById("profileUpload").click()}>Change Photo</button>
@@ -186,45 +173,46 @@ const PersonalInfo = () => {
                         <h2 className="profInfo_content"><span className="profInfo_label">Nickname:</span> {personalInfo.nickname}</h2>
                         <h2 className="profInfo_content"><span className="profInfo_label">Gender:</span> {personalInfo.gender}</h2>
                         <h2 className="profInfo_content"><span className="profInfo_label">Course:</span> {personalInfo.course}</h2>
-                        <h2 className="profInfo_content"><span className="profInfo_label">Personal Email:</span> {personalInfo.personalEmail}</h2>
-                        <h2 className="profInfo_content"><span className="profInfo_label">PUP Email:</span> {email}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">Personal Email:</span> {personalInfo.personal_email}</h2>
+                        <h2 className="profInfo_content"><span className="profInfo_label">PUP Email:</span> {userInfo?.email}</h2>
                     </div>
                 </div>
 
                 <div className="edit_profile my-8">
                     <h2 className="edit_label font-Red_Hat_Display text-white text-sm font-bold mx-10">Edit Profile</h2>
 
+                    {/* Personal Information Fields */}
                     <div className="edit_inputs flex flex-row">
                         <div className="edit_input1 mx-14 flex flex-col gap-4">
                             <div className="nickname flex flex-col items-start mt-4">
-                                <input type="text" placeholder="Nickname" className="personalInfo_inputs" name="nickname" value={personalInfo.nickname} onChange={handleChange} />
+                                <input type="text" placeholder="Nickname" className="personalInfo_inputs" name="nickname" value={editInfo.nickname} onChange={handleChange} />
                                 <label className="personalInfo_labels">Nickname</label>
                             </div>
 
                             <div className="gender flex flex-col items-start">
-                                <input type="text" placeholder="Gender" className="personalInfo_inputs" name="gender" value={personalInfo.gender} onChange={handleChange} />
+                                <input type="text" placeholder="Gender" className="personalInfo_inputs" name="gender" value={editInfo.gender} onChange={handleChange} />
                                 <label className="personalInfo_labels">Gender</label>
                             </div>
 
                             <div className="studentNumber flex flex-col items-start mb-4">
-                                <input type="text" placeholder="Student No." className="personalInfo_inputs" name="studentNumber" value={personalInfo.studentNumber} onChange={handleChange} />
+                                <input type="text" placeholder="Student No." className="personalInfo_inputs" name="student_number" value={editInfo.student_number} onChange={handleChange} />
                                 <label className="personalInfo_labels">Student Number</label>
                             </div>
                         </div>
 
                         <div className="edit_input2 mx-14 flex flex-col gap-4">
                             <div className="personalEmail flex flex-col items-start mt-4">
-                                <input type="text" placeholder="Personal Email Address" className="personalInfo_inputs" name="personalEmail" value={personalInfo.personalEmail} onChange={handleChange} />
+                                <input type="text" placeholder="Personal Email Address" className="personalInfo_inputs" name="personal_email" value={editInfo.personal_email} onChange={handleChange} />
                                 <label className="personalInfo_labels">Personal Email Address</label>
                             </div>
 
                             <div className="mobileNo flex flex-col items-start">
-                                <input type="text" placeholder="Mobile Number" className="personalInfo_inputs" name="mobileNumber" value={personalInfo.mobileNumber} onChange={handleChange} />
+                                <input type="text" placeholder="Mobile Number" className="personalInfo_inputs" name="mobile_number" value={editInfo.mobile_number} onChange={handleChange} />
                                 <label className="personalInfo_labels">Mobile Number</label>
                             </div>
 
                             <div className="course flex flex-col items-start mb-4">
-                                <input type="text" placeholder="Course" className="personalInfo_inputs" name="course" value={personalInfo.course} onChange={handleChange} />
+                                <input type="text" placeholder="Course" className="personalInfo_inputs" name="course" value={editInfo.course} onChange={handleChange} />
                                 <label className="personalInfo_labels">Course</label>
                             </div>
                         </div>
