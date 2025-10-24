@@ -449,6 +449,11 @@ body {
   flex-direction: column;
   justify-content: space-around;
   gap: 8px;
+  background-color: rgba(0,0,0,0.3);
+  padding-block: 8px;
+  padding-inline: 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
 }
 
 .profInfo_label {
@@ -525,6 +530,18 @@ body {
   font-weight: 800;
   color: var(--cc-txt-color2);
   font-size: 16px; 
+}
+
+.eyeBtnPassword {
+  position: absolute;
+  left: 46rem;
+  top: 17.8rem;
+}
+
+.eyeBtnConfirmPassword {
+  position: absolute;
+  left: 46rem;
+  top: 23.2rem;
 }
  
 .updateInformation_btn {

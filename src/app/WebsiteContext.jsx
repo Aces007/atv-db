@@ -118,6 +118,23 @@ export const WebProvider = ({ children }) => {
         }
     };
     
+    const handlePasswordUpdate = async (password, confirmPassword) => {
+        if (password != confirmPassword) {
+            alert("Passwords do not match. Try again..")
+            return;
+        }
+        
+        const { error } = await supabase.auth.updateUser({
+            password
+        })
+    
+        if (error) {
+            alert("Error updating password: " + error.message);
+        }
+        else {
+            alert("Password updated successfully!");
+        }
+    }
 
     const updateUserInfo = async (userId, updatedData) => {
         if (!userId) {
@@ -196,7 +213,7 @@ export const WebProvider = ({ children }) => {
     return (
         <WebsiteContext.Provider
             value={{user, loading, userInfo, handleSignup, handleLogin, 
-                handleLogout, fetchUserInfo, updateUserInfo, handleUploadMaterial}}
+                handleLogout, fetchUserInfo, updateUserInfo, handleUploadMaterial, handlePasswordUpdate}}
         >
             {children}
         </WebsiteContext.Provider>
