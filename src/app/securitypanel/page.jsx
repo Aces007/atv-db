@@ -9,8 +9,6 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 const Security = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { handlePasswordUpdate } = useWebsiteContext();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
