@@ -33,7 +33,7 @@ export const WebProvider = ({ children }) => {
 
             const { error: insertError } = await supabase
                 .from('Users')
-                .insert([{ id: user.id, name, email, birthdate, age, password }]);
+                .insert([{ id: user.id, name, email, birthdate, age}]);
     
             if (insertError) throw insertError;
     
