@@ -85,7 +85,7 @@ const Bookmarks = () => {
           {bookmarks.map((bookmark, index) => (
             <li
               key={index}
-              className="bookmark_card p-4 rounded-xl bg-white bg-opacity-90 shadow-md"
+              className="bookmark_card p-4 rounded-xl bg-white bg-opacity-90 shadow-md hover:bg-yellow-400 transition-colors cursor-pointer"
             >
               <h3 className="font-bold text-md mb-1 text-black">
                 {bookmark.title}

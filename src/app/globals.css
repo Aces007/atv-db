@@ -407,9 +407,9 @@ body {
 }
 
 .info_content {
-  background-image: url('/images/materials/streetart.jpg');
-  background-position-x: center;
-  background-position-y: center;
+  background-image: url('/images/materials/mainCampus.jpg');
+  background-position-x: right;
+  background-position-y: right;
   object-fit: cover;
   padding-block: var(--pad-mar-min);
   opacity: 0.9;
@@ -529,13 +529,13 @@ body {
 .eyeBtnPassword {
   position: absolute;
   left: 46rem;
-  top: 17.8rem;
+  top: 20.4rem;
 }
 
 .eyeBtnConfirmPassword {
   position: absolute;
   left: 46rem;
-  top: 23.2rem;
+  top: 25.8rem;
 }
  
 .updateInformation_btn {
@@ -729,15 +729,28 @@ body {
 }
 
 .bookmarks_panel {
-  background-image: url('/images/materials/streetart.jpg');
-  background-position-x: center;
-  background-position-y: center;
+  background-image: url('/images/materials/mainCampus.jpg');
+  background-position-x: right;
+  background-position-y: right;
   object-fit: cover;
   padding-block: var(--pad-mar-min);
   opacity: 0.9;
   border-radius: var(--br-general);
   padding-block: 2rem;
   padding-inline: 3rem;
+
+}
+
+.userUploads_cont {
+  background-image: url('/images/materials/mainCampus.jpg');
+  background-position-x: right;
+  background-position-y: right;
+  object-fit: cover;
+  padding-block: var(--pad-mar-min);
+  opacity: 0.9;
+  border-radius: var(--br-general);
+  padding-block: 2rem;
+  padding-inline: 1rem;
 
 }
 /*#endregion Upload */
