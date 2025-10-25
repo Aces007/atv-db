@@ -45,7 +45,7 @@ const Security = () => {
         <div className="info_cont">
             <div className="info_content">
                 <div className="edit_security">
-                    <h2 className="securityInfo_label">Security</h2>
+                    <h2 className="font-Red_Hat_Display font-bold text-lg mb-4 text-white">Security</h2>
 
                     <div className="change_pass">
                         <h3 className="changePass_label">Change Password</h3>

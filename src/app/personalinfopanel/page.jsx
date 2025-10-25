@@ -161,6 +161,9 @@ const PersonalInfo = () => {
     return (
         <div className="info_cont">
             <div className="info_content">
+                <h2 className="font-Red_Hat_Display font-bold text-lg mt-8 mx-10 text-white">
+                    Personal Info
+                </h2>
                 <div className="preview_content">
                     <div className="profPic_cont">
                         <Image src={userInfo?.profile_url || "/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />

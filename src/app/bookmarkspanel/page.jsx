@@ -71,9 +71,9 @@ const Bookmarks = () => {
   };
 
   return (
-    <div className="bookmarks_panel px-10 py-6">
+    <div className="bookmarks_panel">
       <h2 className="font-Red_Hat_Display font-bold text-lg mb-4 text-white">
-        Your Bookmarked Items
+        Bookmarks
       </h2>
 
       {loading ? (
