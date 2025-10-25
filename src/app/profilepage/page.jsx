@@ -6,11 +6,12 @@ import Link from "next/link";
 import Header from "../header/page";
 import Footer from "../footer/page";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faLock, faGlobe, faBook } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faLock, faUpload, faBook } from "@fortawesome/free-solid-svg-icons";
 
 import PersonalInfo from "../personalinfopanel/page";
 import Security from "../securitypanel/page";
 import Bookmarks from "../bookmarkspanel/page";
+import UserUploads from "../uploads_section/UserUploads";
 
 import { useState, useEffect } from "react";
 import { useWebsiteContext } from "../WebsiteContext";
@@ -55,6 +56,11 @@ const Profile = () => {
                                 onClick={() => setSelectedSection("Bookmarks")}
                             >
                                     <FontAwesomeIcon icon={faBook} size="1x" className="profileSVGs" />Bookmarks</button>
+                            <button 
+                                className="profile_menu font-Montserrat text-sm flex flex-row items-center gap-4"
+                                onClick={() => setSelectedSection("Uploads")}
+                            >
+                                    <FontAwesomeIcon icon={faUpload} size="1x" className="profileSVGs" />Uploads</button>
                         </div>
                     </div>
                     
@@ -62,6 +68,7 @@ const Profile = () => {
                         {selectedSection === "PersonalInfo" && <PersonalInfo />}
                         {selectedSection === "Security" && <Security />}
                         {selectedSection === "Bookmarks" && <Bookmarks />}
+                        {selectedSection === "Uploads" && <UserUploads />}
                     </div>
                     
                 </div>

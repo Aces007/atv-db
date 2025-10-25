@@ -24,7 +24,7 @@ const Upload = () => {
   const [materialData, setMaterialData] = useState({
     title: "",
     url: "",
-    authors: [{ firstName: "", lastName: "" }],
+    authors: [{ firstName: "", lastName: "", authorEmail: "", }],
     abstract: "",
     materialType: "",
     publicationDate: { month: "", day: "", year: "" },
@@ -78,7 +78,7 @@ const Upload = () => {
   const handleTagInput = (e) => setTagInput(e.target.value);
 
   const handleTagKeyDown = (e) => {
-    if ((e.key === "Enter" || e.key === "," || e.key === " ") && tagInput.trim()) {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
       e.preventDefault();
       const newTag = tagInput.trim().replace(/,/g, "");
       if (!tags.includes(newTag)) {
@@ -192,7 +192,7 @@ const Upload = () => {
             <h2 className="submit_labels">Upload Material</h2>
             <div className="flex items-center gap-4">
               <input type="file" accept="application/pdf" onChange={handleFileUpload} className="upload_material_btn" />
-              <p className="submit_instructions">Use this to find material to be submitted.</p>
+              <p className="submit_instructions">Use this to find the material to be uploaded.</p>
             </div>
           </div>
 
@@ -213,7 +213,7 @@ const Upload = () => {
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
             <h2 className="submit_labels">Author(s)</h2>
             {materialData.authors.map((_, index) => (
-              <div key={index} className="grid grid-cols-2 gap-4 mb-2">
+              <div key={index} className="grid grid-cols-3 gap-4 mb-2">
                 <input
                   type="text"
                   name="firstName"
@@ -229,6 +229,14 @@ const Upload = () => {
                   className="author_inputs"
                   value={materialData.authors[index].lastName}
                   onChange={(e) => handleAuthorChange(index, "lastName", e.target.value)}
+                />
+                <input
+                  type="text"
+                  name="authorEmail"
+                  placeholder="Author's Email"
+                  className="author_inputs"
+                  value={materialData.authors[index].authorEmail}
+                  onChange={(e) => handleAuthorChange(index, "authorEmail", e.target.value)}
                 />
               </div>
             ))}
@@ -380,11 +388,11 @@ const Upload = () => {
           {/* Uploader Info */}
           <div className="bg-white w-full p-6 rounded-lg shadow-md">
             <h2 className="submit_labels">Your Info</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-3 md:grid-cols-3 gap-4 mt-2">
               <input type="text" name="firstName" value={materialData.uploader.firstName} onChange={handleInputChange} placeholder="First Name" className="material_inputs" />
               <input type="text" name="lastName" value={materialData.uploader.lastName} onChange={handleInputChange} placeholder="Last Name" className="material_inputs" />
+              <input type="email" name="email" value={materialData.uploader.email} onChange={handleInputChange} placeholder="Uploader's Email" className="material_inputs" />
             </div>
-            <input type="email" name="email" value={materialData.uploader.email} onChange={handleInputChange} placeholder="Email" className="material_inputs w-full mt-4" />
           </div>
 
           {/* Buttons */}
