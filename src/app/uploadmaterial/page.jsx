@@ -43,7 +43,7 @@ const Upload = () => {
   const addAuthor = () => {
     setMaterialData((prev) => ({
       ...prev,
-      authors: [...prev.authors, { firstName: "", lastName: "" }],
+      authors: [...prev.authors, { firstName: "", lastName: "", authorEmail: "", }],
     }));
   };
 

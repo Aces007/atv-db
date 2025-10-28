@@ -9,7 +9,7 @@ import { useSearchParams } from "next/navigation";
 
 export default function ContactAuthorClient() {
   const searchParams = useSearchParams();
-  const authorEmail = searchParams.get("author");
+  const authorEmail = decodeURIComponent(searchParams.get("author") || "unknown@example.com");
   const articleTitle = searchParams.get("title");
 
   const [message, setMessage] = useState("");
@@ -70,7 +70,9 @@ export default function ContactAuthorClient() {
           </h1>
           <p className="text-gray-600 mb-6 text-sm leading-relaxed">
             You are reaching out to{" "}
-            <span className="font-semibold text-red-700">{authorEmail}</span>{" "}
+            <span className="font-semibold text-red-700">
+              {authorEmail !== "unknown@example.com" ? authorEmail : "Unknown Author"}
+            </span>{" "}
             regarding the article:{" "}
             <span className="italic text-gray-800">{articleTitle}</span>.
           </p>
