@@ -14,12 +14,15 @@ import { faBookmark as faBookmarkSolid } from "@fortawesome/free-solid-svg-icons
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import CitationModal from "../components/CitationModal"; //Citation
+import ContactAuthorDropdown from "../article_journalpage/ContactAuthorDropdown.jsx";
+import { useWebsiteContext } from "../WebsiteContext";
 
 const ArticleJournalPageClient = () => {
   const [materialData, setMaterialData] = useState(null); // Citation
   const [isCitationModalOpen, setIsCitationModalOpen] = useState(false); // Citation
   const searchParams = useSearchParams();
   const title = searchParams.get("title");
+  const { fetchUserInfo, user, updateUserInfo, userInfo } = useWebsiteContext();
   
   const [article, setArticle] = useState(null);
   const [similarArticles, setSimilarArticles] = useState([]);
@@ -289,7 +292,7 @@ const ArticleJournalPageClient = () => {
             {showContributorProfile ? (
               <div className="bg-[#5c0a0a] p-6 rounded-2xl text-white shadow-lg">
                 <div className="flex flex-col items-center gap-4">
-                  <Image src={contributor.avatar} alt={contributor.fullname || "Contributor"} width={150} height={150} className="rounded-full shadow-md" />
+                  <Image src={userInfo?.profile_url || "/images/materials/placeholderImg.png"} alt="Placeholder Image" width={100} height={100} className="placeHolderProfile" />
                   <h2 className="text-2xl font-bold">{contributor.fullname || "Unknown"}</h2>
                   <p className="text-sm font-semibold">{contributor.course || ""}</p>
                   <div className="flex flex-col gap-2 mt-4 w-full text-center text-white text-sm">
@@ -366,26 +369,14 @@ const ArticleJournalPageClient = () => {
                   : "Unknown Author"}
               </span>
 
-              <button className="bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2">
-                <Link
-                  href={`/author_contact?author=${encodeURIComponent(
-                    Array.isArray(article.authors) && article.authors[0]?.email
-                      ? article.authors[0].email
-                      : "unknown@example.com"
-                  )}&title=${encodeURIComponent(article.title)}`}
-                  className="flex items-center gap-2"
-                  onClick={() => setShowContributorProfile(false)}
-                >
-                  <FontAwesomeIcon icon={faEnvelope} className="text-white" />
-                  Contact Author
-                </Link>
-              </button>
               <button
                 className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-lg text-sm flex items-center gap-2"
                 onClick={() => setShowContributorProfile(true)}
               >
                 Contributor Profile
               </button>
+
+              <ContactAuthorDropdown article={article} />
             </div>
 
             <div className="flex items-center gap-8 mb-10 text-gray-600 text-sm font-medium">
