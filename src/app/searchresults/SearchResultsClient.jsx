@@ -517,33 +517,6 @@ const SearchResultsClient = ({ initialQuery, initialField }) => {
                 className="w-20 h-full flex flex-col items-center justify-around text-white"
                 style={{ backgroundColor: "#4F0505" }}
               >
-                <button onClick={async () => {
-                    if (!res.pdf_path) {
-                      alert("No PDF available for this publication.");
-                      return;
-                    }
-  
-                    const { data, error } = await supabase
-                      .storage
-                      .from("pdfs") 
-                      .createSignedUrl(res.pdf_path, 60); 
-  
-                    if (error) {
-                      console.error("Error generating download link:", error);
-                      alert("Failed to download file.");
-                      return;
-                    }
-  
-                    // Trigger download
-                    const link = document.createElement("a");
-                    link.href = data.signedUrl;
-                    link.download = res.title + ".pdf";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}>
-                  <FileText size={23} />
-                </button>
                 <Share2 size={23} />
               </div>
 
