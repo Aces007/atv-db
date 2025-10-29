@@ -124,7 +124,11 @@ const Upload = () => {
     const filePath = await uploadPDFToSupabase(file);
     if (!filePath) return;
 
-    console.log("Successfully uploaded:", filePath);
+    setMaterialData((prev) => ({
+      ...prev, pdf_path: filePath
+    }));
+
+    console.log("Uploaded file: ", filePath);
   };
 
   const addReference = () => {
