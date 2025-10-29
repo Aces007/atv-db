@@ -97,26 +97,6 @@ export const WebProvider = ({ children }) => {
         }
     };
 
-
-    const handleUploadMaterial = async (materialData) => {
-        setLoading(true);
-        
-        try {
-            const {data, error} = await supabase
-            .from("Materials")
-            .insert([materialData]);
-            
-            if (error) throw error;
-
-            console.log("Material uploaded successfully! Please wait for approval for it be displayed.", data);
-            alert("Material uploaded successfully!");
-        } catch (error)  {
-            console.error("Error uploading material:", error.message);
-            alert("Failed to upload material. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
     
     const handlePasswordUpdate = async (password, confirmPassword) => {
         if (password != confirmPassword) {
@@ -213,7 +193,7 @@ export const WebProvider = ({ children }) => {
     return (
         <WebsiteContext.Provider
             value={{user, loading, userInfo, handleSignup, handleLogin, 
-                handleLogout, fetchUserInfo, updateUserInfo, handleUploadMaterial, handlePasswordUpdate}}
+                handleLogout, fetchUserInfo, updateUserInfo, handlePasswordUpdate}}
         >
             {children}
         </WebsiteContext.Provider>
