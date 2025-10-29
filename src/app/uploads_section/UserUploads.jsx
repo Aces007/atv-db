@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { faBook } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Link from "next/link";
 
 const UserUploads = () => {
     const [userUploads, setUserUploads] = useState([]);
@@ -43,6 +44,12 @@ const UserUploads = () => {
                                             <p className="font-Red_Hat_Display text-min text-gray-600 font-semibold mt-1 hover:text-gray-800 transition-colors">Accessed: {upload.accessCount} times</p>
                                         </div>
                                     </div>
+                                    <Link 
+                                        href={`/uploadmaterial?edit=${upload.id}`}
+                                        className="ml-auto font-Montserrat font-bold text-sm uppercase text-blue-500 hover:underline"
+                                    >
+                                        Edit
+                                    </Link>
                                 </div>
                             </li>
                         ))
